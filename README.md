@@ -1,10 +1,4 @@
-# ILA project template
+# Instruction-level Abstraction (ILA) of HLSCNN Accelerator
 
-To initialize the project with your customized name, run:
+This is the ILA model of [HLSCNN](https://github.com/ttambe/HLSCNN_Accel) accelerator (all right reserved - Harvard University)
 
-```bash
-python3 script/init.py <project_name>
-```
-
-This will generate the template ILA project. 
-The directory `template` can be removed afterward.
