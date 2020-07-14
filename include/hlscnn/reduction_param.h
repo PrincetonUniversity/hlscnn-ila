@@ -28,6 +28,7 @@
 #define REDUCTION_PARAM_H__
 
 #include <hlscnn/top_config.h>
+#include <hlscnn/common_config.h>
 #include <cmath>
 
 namespace ilang {
@@ -60,6 +61,8 @@ namespace hlscnn {
 #define REDUCTION_INPUT_CHAN_NUM "reduction_input_chan_num"
 #define REDUCTION_INPUT_CHAN_NUM_BITWIDTH REDUCTION_NUM_CHAN_BITWIDTH
 
+#define REDUCTION_ACT_FUNC "reduction_act_func"
+#define REDUCTION_ACT_FUNC_BITWIDTH ACT_FUNC_WIDTH
 
 
 

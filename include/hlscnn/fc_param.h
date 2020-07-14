@@ -30,6 +30,7 @@
 #define FC_PARAM_H__
 
 #include <hlscnn/top_config.h>
+#include <hlscnn/common_config.h>
 
 namespace ilang {
 namespace hlscnn {
@@ -43,10 +44,6 @@ namespace hlscnn {
 #define FC_DATA_WIDTH 12
 #define FC_BOOL_WIDTH 1
 #define FC_BATCH_WIDTH 3
-
-#define ACT_FUNC_WIDTH 2
-#define RELU_THRESHOLD_WIDTH 22
-
 
 #define FC_WEIGHT_BASE "fc_weight_base"
 #define FC_WEIGHT_BASE_BITWIDTH FC_ADDR_WIDTH

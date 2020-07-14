@@ -28,6 +28,7 @@
 #define CONV_PARAM_H__
 
 #include <hlscnn/top_config.h>
+#include <hlscnn/common_config.h>
 #include <cmath>
 
 namespace ilang {
@@ -81,6 +82,27 @@ namespace hlscnn {
 
 #define CONV_KERNEL_R_STRIDE "conv_kernel_r_stride"
 #define CONV_KERNEL_R_STRIDE_BITWIDTH CONV_KERNEL_SIZE_BITWIDTH
+
+#define CONV_ENABLE_BIAS "conv_enable_bias"
+#define CONV_ENABLE_BIAS_BITWIDTH CONV_BOOL_WIDTH
+
+#define CONV_ENABLE_RELU "conv_enable_relu"
+#define CONV_ENABLE_RELU_BITWIDTH CONV_BOOL_WIDTH
+
+#define CONV_ENABLE_ACCUM "conv_enable_accum"
+#define CONV_ENABLE_ACCUM_BITWIDTH CONV_BOOL_WIDTH
+
+#define CONV_ENABLE_WB "conv_enable_wb"
+#define CONV_ENABLE_WB_BITWIDTH CONV_BOOL_WIDTH
+
+#define CONV_OFILTER_IDX "conv_ofilter_idx"
+#define CONV_OFILTER_IDX_BITWIDTH CONV_NUM_FILTER_BITWIDTH
+
+#define CONV_OUTPUT_ROW_NUM "conv_output_row_num"
+#define CONV_OUTPUT_ROW_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+
+#define CONV_OUTPUT_COL_NUM "conv_output_col_num"
+#define CONV_OUTPUT_COL_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
 
 
 
