@@ -31,10 +31,52 @@
 
 namespace ilang {
 namespace hlscnn {
-
+  
   // CFG parameters
   #define CFG_REG_BITWIDTH 32
   #define CFG_REG_BYTE_NUM CONFIG_REG_BITWIDTH/8
+
+  /*********************************************************/
+  // define config state id, same as hlscnn design
+  /*********************************************************/
+  enum ConfigRegId {
+    // Unused configuration registers.
+    ConfigReg1,
+    ConfigReg2,
+    ConfigReg3,
+    ConfigReg4,
+
+    SocMemBaseAddr,
+    SocMemRdWrLength,
+    AccelSpadCFG,
+    AxiMasterSelfTestTrigger,
+    AxiMasterSelfTestRemoteBaseAddr,
+    AcpMasterSelfTestTrigger,
+    AcpMasterSelfTestRemoteBaseAddr,
+    AxiAttrConfig,
+    AccelStartFlagReg,
+    AccelFCWeightsBase,
+    AccelFCActivationBase,
+    AccelFCSizeConfig,
+    AccelBiasActivationConfig,
+    AccelConvTrigger,
+    AccelConvActivationBaseAddr,
+    AccelConvWeightsBaseAddr,
+    AccelConvOutputsBaseAddr,
+    AccelConvInputSizeConfig,
+    AccelConvOutputSizeConfig,
+    AccelConvKernelSizeConfig,
+    AccelConvChannelConfig,
+    AccelReductionTrigger,
+    AccelReductionInputBaseAddr,
+    AccelReductionOutputBaseAddr,
+    AccelReductionInputSizeConfig,
+    AccelReductionBiasConfig,
+  };
+
+  /*********************************************************/
+  // define config state names
+  /*********************************************************/
 
   //SocMemBaseAddr is used to specify base address of UMEM or RRAM
   //from which activation/weights will be read from (or written to)
@@ -166,4 +208,4 @@ namespace hlscnn {
 } // namespace ilang
 
 
-#endif CONFIG_REG_HH__
+#endif // CONFIG_REG_H__

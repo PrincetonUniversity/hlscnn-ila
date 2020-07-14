@@ -22,25 +22,48 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: utils.h
+// File: reduction_param.h
 
-#ifndef UTILS_H__
-#define UTILS_H__
+#ifndef REDUCTION_PARAM_H__
+#define REDUCTION_PARAM_H__
 
-#include <ilang/ilang++.h>
-#include <hlscnn/hlscnn_top.h>
+#include <hlscnn/top_config.h>
+#include <cmath>
 
 namespace ilang {
 namespace hlscnn {
 
-inline void DefineCfgReg_helper(Ila& m, const std::string& reg_name) {
-  m.NewBvState(reg_name, CFG_REG_BITWIDTH);
-}
+//////////////////////////
+// reduction param info
+// ref: utils_accel.h
+/////////////////////////
 
-ExprRef& GetCfgRegAlignedData(const Ila& m);
+#define REDUCTION_MAX_CHAN_NUM 1024
+#define REDUCTION_MAX_ROW_NUM 1024
+#define REDUCTION_NUM_CHAN_BITWIDTH (int)(ceil(log2(REDUCTION_MAX_CHAN_NUM)))
+#define REDUCTION_NUM_ROW_BITWIDTH (int)(ceil(log2(REDUCTION_MAX_ROW_NUM)))
 
-}
+#define REDUCTION_BOOL_WIDTH 1
 
-}
+#define REDUCTION_INPUT_BASE_ADDR "reduction_input_base_addr"
+#define REDUCTION_INPUT_BASE_ADDR_BITWIDTH TOP_ADDR_IN_BITWIDTH
 
-#endif // UTILS_H__
+#define REDUCTION_OUTPUT_BASE_ADDR "reduction_output_base_addr"
+#define REDUCTION_OUTPUT_BASE_ADDR_BITWIDTH TOP_ADDR_IN_BITWIDTH
+
+#define REDUCTION_INPUT_ROW_NUM "reduction_input_row_num"
+#define REDUCTION_INPUT_ROW_NUM_BITWIDTH REDUCTION_NUM_ROW_BITWIDTH
+
+#define REDUCTION_INPUT_COL_NUM "reduction_input_col_num"
+#define REDUCITON_INPUT_COL_NUM_BITWIDTH REDUCTION_NUM_ROW_BITWIDTH
+
+#define REDUCTION_INPUT_CHAN_NUM "reduction_input_chan_num"
+#define REDUCTION_INPUT_CHAN_NUM_BITWIDTH REDUCTION_NUM_CHAN_BITWIDTH
+
+
+
+
+} // namespace hlscnn
+} // namespace ilang
+
+#endif // REDUCTION_PARAM_H__

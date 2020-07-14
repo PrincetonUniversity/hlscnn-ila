@@ -9,13 +9,19 @@ using namespace ilang;
 
 int main() {
   // get the ILA model
-  auto hlscnn = GetHlscnnIla("hlscnn");
+  auto hlscnn = hlscnn::GetHlscnnIla("hlscnn");
 
-  // example - export ILA to Verilog
-  ILA_INFO << "Export " << hlscnn << " to hlscnn.v";
-  std::ofstream fw("hlscnn.v");
-  hlscnn.ExportToVerilog(fw);
-  fw.close();
+  ILA_INFO << "#instr: " << hlscnn.instr_num();
+  ILA_INFO << "#state: " << hlscnn.state_num();
+  for (auto i = 0; i < hlscnn.instr_num(); i++) {
+    ILA_INFO << "instr." << i << " " << hlscnn.instr(i);
+  }
+
+  // // example - export ILA to Verilog
+  // ILA_INFO << "Export " << hlscnn << " to hlscnn.v";
+  // std::ofstream fw("hlscnn.v");
+  // hlscnn.ExportToVerilog(fw);
+  // fw.close();
 
   return 0;
 }

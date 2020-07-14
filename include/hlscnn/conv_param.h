@@ -1,0 +1,90 @@
+// =============================================================================
+// MIT License
+//
+// Copyright (c) 2019 Princeton University
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+// =============================================================================
+
+// File: conv_param.h
+
+#ifndef CONV_PARAM_H__
+#define CONV_PARAM_H__
+
+#include <hlscnn/top_config.h>
+#include <cmath>
+
+namespace ilang {
+namespace hlscnn {
+
+//////////////////////////
+// CONV param info
+// ref: utils_accel.h
+/////////////////////////
+
+#define CONV_MAX_ROWS 1024
+#define CONV_MAX_KERNEL_SIZE 256
+#define CONV_MAX_KERNEL_NUM 4096
+#define CONV_MAX_FILTER_NUM 256
+#define CONV_ROWS_BITWIDTH (int)(ceil(log2(CONV_MAX_ROWS)))
+#define CONV_NUM_CHAN_BITWIDTH (int)(ceil(log2(CONV_MAX_KERNEL_NUM)))
+#define CONV_NUM_FILTER_BITWIDTH (int)(ceil(log2(CONV_MAX_FILTER_NUM)))
+#define CONV_KERNEL_SIZE_BITWIDTH (int)(ceil(log2(CONV_MAX_KERNEL_SIZE)))
+
+#define CONV_BOOL_WIDTH 1
+
+#define CONV_ACT_BASE "conv_activation_base"
+#define CONV_ACT_BASE_BITWIDTH TOP_ADDR_IN_BITWIDTH
+
+#define CONV_WEIGHT_BASE "conv_weight_base"
+#define CONV_WEIGHT_BASE_BITWIDTH TOP_ADDR_IN_BITWIDTH
+
+#define CONV_SPAD_OUTPUT_BASE "conv_spad_output_base"
+#define CONV_SPAD_OUTPUT_BASE_BITWIDTH TOP_ADDR_IN_BITWIDTH
+
+#define CONV_INPUT_ROW_NUM "conv_input_row_num"
+#define CONV_INPUT_ROW_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+
+#define CONV_INPUT_COL_NUM "conv_input_col_num"
+#define CONV_INPUT_COL_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+
+#define CONV_INPUT_CHAN_NUM "conv_input_chan_num"
+#define CONV_INPUT_CHAN_NUM_BITWIDTH CONV_NUM_CHAN_BITWIDTH 
+
+#define CONV_OUTPUT_CHAN_NUM "conv_output_chan_num"
+#define CONV_OUTPUT_CHAN_NUM_BITWIDTH CONV_NUM_CHAN_BITWIDTH
+
+#define CONV_KERNEL_ROW_NUM "conv_kernel_row_num"
+#define CONV_KERNEL_ROW_NUM_BITWIDTH CONV_KERNEL_SIZE_BITWIDTH
+
+#define CONV_KERNEL_COL_NUM "conv_kernel_col_num"
+#define CONV_KERNEL_COL_NUM_BITWIDTH CONV_KERNEL_SIZE_BITWIDTH
+
+#define CONV_KERNEL_C_STRIDE "conv_kernel_c_stride"
+#define CONV_KERNEL_C_STRIDE_BITWIDTH CONV_KERNEL_SIZE_BITWIDTH
+
+#define CONV_KERNEL_R_STRIDE "conv_kernel_r_stride"
+#define CONV_KERNEL_R_STRIDE_BITWIDTH CONV_KERNEL_SIZE_BITWIDTH
+
+
+
+} // namespace hlscnn
+} // namespace ilang
+
+#endif // CONV_PARAM_H__

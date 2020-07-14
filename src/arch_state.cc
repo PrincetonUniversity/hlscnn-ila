@@ -22,25 +22,5 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: utils.h
+// File: arch_state.cc
 
-#ifndef UTILS_H__
-#define UTILS_H__
-
-#include <ilang/ilang++.h>
-#include <hlscnn/hlscnn_top.h>
-
-namespace ilang {
-namespace hlscnn {
-
-inline void DefineCfgReg_helper(Ila& m, const std::string& reg_name) {
-  m.NewBvState(reg_name, CFG_REG_BITWIDTH);
-}
-
-ExprRef& GetCfgRegAlignedData(const Ila& m);
-
-}
-
-}
-
-#endif // UTILS_H__

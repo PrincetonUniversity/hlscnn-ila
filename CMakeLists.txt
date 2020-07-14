@@ -29,6 +29,8 @@ find_package(ilang REQUIRED)
 add_executable(${MyTarget} 
   app/main.cc
   src/hlscnn_top.cc
+  src/config_state.cc
+  src/arch_state.cc
 )
 
 target_include_directories(${MyTarget} PRIVATE include)

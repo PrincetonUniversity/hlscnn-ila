@@ -22,25 +22,57 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: utils.h
+// File: fc_param.h
 
-#ifndef UTILS_H__
-#define UTILS_H__
+// This file contains info related to FC
 
-#include <ilang/ilang++.h>
-#include <hlscnn/hlscnn_top.h>
+#ifndef FC_PARAM_H__
+#define FC_PARAM_H__
+
+#include <hlscnn/top_config.h>
 
 namespace ilang {
 namespace hlscnn {
 
-inline void DefineCfgReg_helper(Ila& m, const std::string& reg_name) {
-  m.NewBvState(reg_name, CFG_REG_BITWIDTH);
-}
+//////////////////////////
+// FC param info
+// ref: utils_accel.h
+/////////////////////////
 
-ExprRef& GetCfgRegAlignedData(const Ila& m);
+#define FC_ADDR_WIDTH 32
+#define FC_DATA_WIDTH 12
+#define FC_BOOL_WIDTH 1
+#define FC_BATCH_WIDTH 3
 
-}
+#define ACT_FUNC_WIDTH 2
+#define RELU_THRESHOLD_WIDTH 22
 
-}
 
-#endif // UTILS_H__
+#define FC_WEIGHT_BASE "fc_weight_base"
+#define FC_WEIGHT_BASE_BITWIDTH FC_ADDR_WIDTH
+
+#define FC_ACT_BASE "fc_act_base"
+#define FC_ACT_BASE_BITWIDTH FC_ADDR_WIDTH
+
+#define FC_NUM_ROWS "fc_num_rows"
+#define FC_NUM_ROWS_BITWIDTH FC_DATA_WIDTH
+
+#define FC_NUM_COLS "fc_num_cols"
+#define FC_NUM_COLS_BITWIDTH FC_DATA_WIDTH
+
+#define FC_RUN_BIAS "fc_run_bias"
+#define FC_RUN_BIAS_BITWIDTH FC_BOOL_WIDTH
+
+#define FC_BATCH_SIZE "fc_batch_size"
+#define FC_BATCH_SIZE_BITWIDTH FC_BATCH_WIDTH
+
+#define FC_ACT_FUNC "fc_activation_func"
+#define FC_ACT_FUNC_BITWIDTH ACT_FUNC_WIDTH
+
+#define FC_RELU_THRESHOLD "fc_relu_threshold"
+#define FC_RELU_THRESHOLD_BITWIDTH RELU_THRESHOLD_WIDTH
+
+} // namespace hlscnn
+} // namespace ilang
+
+#endif // FC_PARAM_H__

@@ -22,10 +22,7 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: utils.h
-
-#ifndef UTILS_H__
-#define UTILS_H__
+// File: top_input.cc
 
 #include <ilang/ilang++.h>
 #include <hlscnn/hlscnn_top.h>
@@ -33,14 +30,31 @@
 namespace ilang {
 namespace hlscnn {
 
-inline void DefineCfgReg_helper(Ila& m, const std::string& reg_name) {
-  m.NewBvState(reg_name, CFG_REG_BITWIDTH);
+void DefineTopInput(Ila& m) {
+
+  m.NewBvState(TOP_IF_WR, TOP_IF_WR_BITWIDTH);
+  m.NewBvState(TOP_IF_RD, TOP_IF_RD_BITWIDTH);
+
+  // Top addr and data input
+  m.NewBvInput(TOP_ADDR_IN, TOP_ADDR_IN_BITWIDTH);
+
+  m.NewBvInput(TOP_DATA_IN_0, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_1, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_2, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_3, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_4, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_5, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_6, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_7, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_8, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_9, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_10, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_11, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_12, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_13, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_14, TOP_DATA_IN_BITWIDTH);
+  m.NewBvInput(TOP_DATA_IN_15, TOP_DATA_IN_BITWIDTH);
 }
-
-ExprRef& GetCfgRegAlignedData(const Ila& m);
-
-}
-
-}
-
-#endif // UTILS_H__
+  
+} // namespace hlscnn
+} // namespace ilang
