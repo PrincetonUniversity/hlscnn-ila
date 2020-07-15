@@ -32,8 +32,8 @@ namespace hlscnn {
 
 void DefineTopInput(Ila& m) {
 
-  m.NewBvState(TOP_IF_WR, TOP_IF_WR_BITWIDTH);
-  m.NewBvState(TOP_IF_RD, TOP_IF_RD_BITWIDTH);
+  m.NewBvInput(TOP_IF_WR, TOP_IF_WR_BITWIDTH);
+  m.NewBvInput(TOP_IF_RD, TOP_IF_RD_BITWIDTH);
 
   // Top addr and data input
   m.NewBvInput(TOP_ADDR_IN, TOP_ADDR_IN_BITWIDTH);

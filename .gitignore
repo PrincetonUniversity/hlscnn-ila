@@ -37,3 +37,6 @@ build/*
 # Intermediate files
 *.swp
 *.pyc
+
+# unrelated folder
+*/.vscode

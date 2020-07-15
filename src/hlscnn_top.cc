@@ -25,6 +25,7 @@
 // File: hlscnn_top.cc
 
 #include <ilang/ilang++.h>
+
 #include <hlscnn/hlscnn_top.h>
 #include <ilang/util/log.h>
 
@@ -37,8 +38,17 @@ Ila GetHlscnnIla(const std::string& model_name) {
   SetUnsignedComparison(true);
   // model valid function
 
+  // Define top input
+  DefineTopInput(m);
   // Define configuration states
   DefineConfigReg(m);
+  DefineFCParam(m);
+  DefineConvParam(m);
+  DefineReduceParam(m);
+
+  // Define Instructions
+  DefineConfigInstr(m);
+    // ILA_INFO << CONV_INPUT_ROW_NUM_BITWIDTH;
   
 
 

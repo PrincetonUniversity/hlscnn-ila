@@ -30,7 +30,7 @@
 namespace ilang {
 namespace hlscnn{
 
-ExprRef& GetCfgRegAlignedData(const Ila& m) {
+ExprRef GetCfgRegAlignedData(const Ila& m) {
   auto start = Concat(BvConst(0, 28),
                       Extract(m.input(TOP_ADDR_IN), 3, 0));
   start = start << 3; // multiply by 8 to get the byte level address of data
@@ -69,6 +69,41 @@ ExprRef& GetCfgRegAlignedData(const Ila& m) {
                      ))))))))))));
 
   return aligned_data;
+}
+
+void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name) {
+  // define config write instructions
+  auto is_write = (m.input(TOP_IF_WR) & ~m.input(TOP_IF_RD));
+  // masked address.
+  // "Mask off the top 8 bits, which represent the device memory map
+  // offset from the CPU.""
+  auto masked_addr = Concat(BvConst(0, 8), 
+                            Extract(m.input(TOP_ADDR_IN), 23, 0));
+  auto is_config_addr = (masked_addr < SPAD0_BASE_ADDR);
+
+  // get the aligned data. Reg data is only 32 bit
+
+  // " For config reg writes only:
+  //
+  // Get the right 32-bit slice of the 128-bit data. This can be determined
+  // by looking at the last four bits of the address - 128-bit data is 16
+  // bytes, which takes 4 bits of addressing. Take that value and multiply
+  // it by 8 (8 bits per byte) to get the start of the right 32-bit slice.
+  // "
+
+  auto aligned_data = GetCfgRegAlignedData(m);
+
+  auto reg_id = URem(masked_addr >> CFG_REG_SIZE_BITWIDTH,
+                     BvConst(0, masked_addr.bit_width()));
+  
+  std::string instr_name = "CFG_WR_" + reg_name;
+  
+  {
+    auto instr = m.NewInstr(instr_name);
+    instr.SetDecode(is_write & is_config_addr & (reg_id == reg_idx));
+
+    instr.SetUpdate(m.state(reg_name), aligned_data);
+  }
 }
 
 } // namespace hlscnn

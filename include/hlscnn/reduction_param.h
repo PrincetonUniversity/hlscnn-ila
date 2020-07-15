@@ -41,8 +41,8 @@ namespace hlscnn {
 
 #define REDUCTION_MAX_CHAN_NUM 1024
 #define REDUCTION_MAX_ROW_NUM 1024
-#define REDUCTION_NUM_CHAN_BITWIDTH (int)(ceil(log2(REDUCTION_MAX_CHAN_NUM)))
-#define REDUCTION_NUM_ROW_BITWIDTH (int)(ceil(log2(REDUCTION_MAX_ROW_NUM)))
+#define REDUCTION_NUM_CHAN_BITWIDTH (int)(std::ceil(std::log2(REDUCTION_MAX_CHAN_NUM)))
+#define REDUCTION_NUM_ROW_BITWIDTH (int)(std::ceil(std::log2(REDUCTION_MAX_ROW_NUM)))
 
 #define REDUCTION_BOOL_WIDTH 1
 
@@ -63,6 +63,13 @@ namespace hlscnn {
 
 #define REDUCTION_ACT_FUNC "reduction_act_func"
 #define REDUCTION_ACT_FUNC_BITWIDTH ACT_FUNC_WIDTH
+
+// The following are declared as ac_fixed, which should be used uninterpreted function to handle it
+#define REDUCTION_BIAS "reduction_bias"
+#define REDUCTION_BIAS_BITWIDTH WEIGHT_TOTAL_BITWIDTH
+
+#define REDUCTION_RELU_THRESHOLD "reduction_relu_threshold"
+#define REDUCTION_RELU_THRESHOLD_BITWIDTH RELU_THRESHOLD_WIDTH
 
 
 

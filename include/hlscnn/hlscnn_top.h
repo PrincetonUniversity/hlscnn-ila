@@ -29,10 +29,15 @@
 
 #include <ilang/ilang++.h>
 #include <string>
+#include <ilang/util/log.h>
 
 #include <hlscnn/top_config.h>
 #include <hlscnn/config_reg.h>
 #include <hlscnn/utils.h>
+#include <hlscnn/conv_param.h>
+#include <hlscnn/fc_param.h>
+#include <hlscnn/reduction_param.h>
+#include <hlscnn/common_config.h>
 
 namespace ilang {
 
@@ -40,7 +45,14 @@ namespace hlscnn {
 
 Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
 
+void DefineTopInput(Ila& m);
+
 void DefineConfigReg(Ila& m);
+void DefineFCParam(Ila& m);
+void DefineConvParam(Ila& m);
+void DefineReduceParam(Ila& m);
+
+void DefineConfigInstr(Ila& m);
 
 }
 };

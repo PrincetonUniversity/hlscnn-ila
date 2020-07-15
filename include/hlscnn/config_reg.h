@@ -29,12 +29,15 @@
 #ifndef CONFIG_REG_H__
 #define CONFIG_REG_H__
 
+#include <cmath>
+
 namespace ilang {
 namespace hlscnn {
   
   // CFG parameters
   #define CFG_REG_BITWIDTH 32
-  #define CFG_REG_BYTE_NUM CONFIG_REG_BITWIDTH/8
+  #define CFG_REG_BYTEWIDTH CFG_REG_BITWIDTH/8
+  #define CFG_REG_SIZE_BITWIDTH (int)(std::floor(std::log2(CFG_REG_BYTEWIDTH)))
 
   /*********************************************************/
   // define config state id, same as hlscnn design
@@ -72,6 +75,7 @@ namespace hlscnn {
     AccelReductionOutputBaseAddr,
     AccelReductionInputSizeConfig,
     AccelReductionBiasConfig,
+    NumCfgRegisters
   };
 
   /*********************************************************/
@@ -172,7 +176,7 @@ namespace hlscnn {
   // ------------------------------------------------------------------------------------------------------------------
   // |  31-24|    22     |  21-19              |     18                            |         17         |     16   |     15-0            |
   // ------------------------------------------------------------------------------------------------------------------
-  #define CFG_REG_ACCEL_CHANNEL_CFG "cfg_reg_accel_channel_cfg"
+  #define CFG_REG_ACCEL_CONV_CHANNEL_CFG "cfg_reg_accel_conv_channel_cfg"
 
 
 

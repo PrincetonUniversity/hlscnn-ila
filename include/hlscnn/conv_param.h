@@ -43,10 +43,10 @@ namespace hlscnn {
 #define CONV_MAX_KERNEL_SIZE 256
 #define CONV_MAX_KERNEL_NUM 4096
 #define CONV_MAX_FILTER_NUM 256
-#define CONV_ROWS_BITWIDTH (int)(ceil(log2(CONV_MAX_ROWS)))
-#define CONV_NUM_CHAN_BITWIDTH (int)(ceil(log2(CONV_MAX_KERNEL_NUM)))
-#define CONV_NUM_FILTER_BITWIDTH (int)(ceil(log2(CONV_MAX_FILTER_NUM)))
-#define CONV_KERNEL_SIZE_BITWIDTH (int)(ceil(log2(CONV_MAX_KERNEL_SIZE)))
+#define CONV_NUM_ROW_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_ROWS)))
+#define CONV_NUM_CHAN_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_KERNEL_NUM)))
+#define CONV_NUM_FILTER_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_FILTER_NUM)))
+#define CONV_KERNEL_SIZE_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_KERNEL_SIZE)))
 
 #define CONV_BOOL_WIDTH 1
 
@@ -60,10 +60,10 @@ namespace hlscnn {
 #define CONV_SPAD_OUTPUT_BASE_BITWIDTH TOP_ADDR_IN_BITWIDTH
 
 #define CONV_INPUT_ROW_NUM "conv_input_row_num"
-#define CONV_INPUT_ROW_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+#define CONV_INPUT_ROW_NUM_BITWIDTH CONV_NUM_ROW_BITWIDTH
 
 #define CONV_INPUT_COL_NUM "conv_input_col_num"
-#define CONV_INPUT_COL_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+#define CONV_INPUT_COL_NUM_BITWIDTH CONV_NUM_ROW_BITWIDTH
 
 #define CONV_INPUT_CHAN_NUM "conv_input_chan_num"
 #define CONV_INPUT_CHAN_NUM_BITWIDTH CONV_NUM_CHAN_BITWIDTH 
@@ -99,10 +99,16 @@ namespace hlscnn {
 #define CONV_OFILTER_IDX_BITWIDTH CONV_NUM_FILTER_BITWIDTH
 
 #define CONV_OUTPUT_ROW_NUM "conv_output_row_num"
-#define CONV_OUTPUT_ROW_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+#define CONV_OUTPUT_ROW_NUM_BITWIDTH CONV_NUM_ROW_BITWIDTH
 
 #define CONV_OUTPUT_COL_NUM "conv_output_col_num"
-#define CONV_OUTPUT_COL_NUM_BITWIDTH CONV_NUM_ROWS_BITWIDTH
+#define CONV_OUTPUT_COL_NUM_BITWIDTH CONV_NUM_ROW_BITWIDTH
+
+
+// The following are declared as ac_fixed, which should be used uninterpreted function to handle it
+#define CONV_CHAN_BIAS "conv_chan_bias"
+#define CONV_CHAN_BIAS_BITWIDTH WEIGHT_TOTAL_BITWIDTH
+
 
 
 

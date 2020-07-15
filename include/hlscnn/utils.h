@@ -37,7 +37,9 @@ inline void DefineCfgReg_helper(Ila& m, const std::string& reg_name) {
   m.NewBvState(reg_name, CFG_REG_BITWIDTH);
 }
 
-ExprRef& GetCfgRegAlignedData(const Ila& m);
+ExprRef GetCfgRegAlignedData(const Ila& m);
+
+void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name);
 
 }
 

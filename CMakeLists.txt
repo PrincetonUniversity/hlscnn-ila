@@ -30,7 +30,11 @@ add_executable(${MyTarget}
   app/main.cc
   src/hlscnn_top.cc
   src/config_state.cc
+  src/config_instr.cc
+  src/top_input.cc
   src/arch_state.cc
+  src/utils.cc
+
 )
 
 target_include_directories(${MyTarget} PRIVATE include)
