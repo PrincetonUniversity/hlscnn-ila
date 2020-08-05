@@ -54,6 +54,10 @@ void DefineReduceParam(Ila& m);
 
 void DefineConfigInstr(Ila& m);
 
+void DefineArchState(Ila& m);
+
+void DefineSPADInstr(Ila& m);
+
 }
 };
 

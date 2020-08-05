@@ -24,3 +24,21 @@
 
 // File: arch_state.cc
 
+#include <ilang/ilang++.h>
+#include <hlscnn/hlscnn_top.h>
+
+namespace ilang {
+namespace hlscnn {
+
+void DefineArchState(Ila& m) {
+  // scratchpad0 and scratchpad1 are declared as memstate here
+  m.NewMemState(SCRATCH_PAD_0, TOP_ADDR_IN_BITWIDTH, SCRATCH_PAD_DATA_BITWIDTH);
+  m.state(SCRATCH_PAD_0).SetEntryNum(SPAD_CAPACITY);
+
+  m.NewMemState(SCRATCH_PAD_1, TOP_ADDR_IN_BITWIDTH, SCRATCH_PAD_DATA_BITWIDTH);
+  m.state(SCRATCH_PAD_1).SetEntryNum(SPAD_CAPACITY);
+}
+
+
+} // namespace hlscnn
+} // namespace ilang

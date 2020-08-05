@@ -61,6 +61,10 @@ namespace hlscnn {
 
   // memory address 
   // memory_map.h
+  #define SCRATCH_PAD_0 "scratch_pad_0"
+  #define SCRATCH_PAD_1 "scratch_pad_1"
+  
+  #define SCRATCH_PAD_DATA_BITWIDTH 8
 
   // scratch pad parameters
   #define SPAD_NUM_BANK 4

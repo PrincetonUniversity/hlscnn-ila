@@ -33,6 +33,7 @@ add_executable(${MyTarget}
   src/config_instr.cc
   src/top_input.cc
   src/arch_state.cc
+  src/spad_instr.cc
   src/utils.cc
 
 )
