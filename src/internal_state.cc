@@ -22,7 +22,7 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: top_input.cc
+// File: internal_state.cc
 
 #include <ilang/ilang++.h>
 #include <hlscnn/hlscnn_top.h>
@@ -30,31 +30,21 @@
 namespace ilang {
 namespace hlscnn {
 
-void DefineTopInput(Ila& m) {
+void DefineInternalState(Ila& m) {
 
-  m.NewBvInput(TOP_IF_WR, TOP_IF_WR_BITWIDTH);
-  m.NewBvInput(TOP_IF_RD, TOP_IF_RD_BITWIDTH);
-
-  // Top addr and data input
-  m.NewBvInput(TOP_ADDR_IN, TOP_ADDR_IN_BITWIDTH);
-
-  m.NewBvInput(TOP_DATA_IN_0, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_1, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_2, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_3, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_4, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_5, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_6, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_7, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_8, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_9, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_10, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_11, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_12, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_13, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_14, TOP_DATA_IN_BITWIDTH);
-  m.NewBvInput(TOP_DATA_IN_15, TOP_DATA_IN_BITWIDTH);
-}
+  ////////////////////////////////////
+  // AXI master interface states
+  ////////////////////////////////////
+  m.NewBvState(ACCEL_MASTER_AXI_CHILD_VALID_FLAG, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH);
+  m.NewBvState(ACCEL_MASTER_AXI_CHILD_STATE, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH);
+  m.NewBvState(ACCEL_SPAD_WR_ADDR, ACCEL_SPAD_WR_ADDR_BITWIDTH);
   
-} // namespace hlscnn
+  ////////////////////////////////////
+  // conv internal state
+  ///////////////////////////////////
+  m.NewBvState(ACCEL_CONV_CHILD_VALID_FLAG, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH);
+
+}
+
+} // namespace hlscnn 
 } // namespace ilang

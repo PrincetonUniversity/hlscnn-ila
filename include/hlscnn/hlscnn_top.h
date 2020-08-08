@@ -38,6 +38,7 @@
 #include <hlscnn/fc_param.h>
 #include <hlscnn/reduction_param.h>
 #include <hlscnn/common_config.h>
+#include <hlscnn/internal_state.h>
 
 namespace ilang {
 
@@ -45,18 +46,23 @@ namespace hlscnn {
 
 Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
 
-void DefineTopInput(Ila& m);
+void DefineTopIO(Ila& m);
 
 void DefineConfigReg(Ila& m);
 void DefineFCParam(Ila& m);
 void DefineConvParam(Ila& m);
 void DefineReduceParam(Ila& m);
 
-void DefineConfigInstr(Ila& m);
-
 void DefineArchState(Ila& m);
+void DefineInternalState(Ila& m);
 
+void DefineConfigInstr(Ila& m);
 void DefineSPADInstr(Ila& m);
+void DefineAccelConvTrigger(Ila& m);
+
+// child instructions
+void DefineAXIMasterChild(Ila& m);
+void DefineAccelConvChild(Ila& m);
 
 }
 };

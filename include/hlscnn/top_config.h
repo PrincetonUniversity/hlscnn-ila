@@ -30,34 +30,89 @@
 namespace ilang {
 namespace hlscnn {
 
-  #define TOP_IF_WR "top_if_wr"
-  #define TOP_IF_WR_BITWIDTH 1
+  #define TOP_SLAVE_IF_WR "top_slave_if_wr"
+  #define TOP_SLAVE_IF_WR_BITWIDTH 1
 
-  #define TOP_IF_RD "top_if_rd"
-  #define TOP_IF_RD_BITWIDTH 1
+  #define TOP_SLAVE_IF_RD "top_slave_if_rd"
+  #define TOP_SLAVE_IF_RD_BITWIDTH 1
   // AXI protocol
   // axi_cfg.h
-  #define TOP_ADDR_IN "top_addr_in"
-  #define TOP_ADDR_IN_BITWIDTH 32
+  
+  // there are two AXI interface involved
+  // a slave interface for configuration writes and a master interface for fetching 
+  // weights and activations
 
-  #define TOP_DATA_IN_0 "data_in_0"
-  #define TOP_DATA_IN_1 "data_in_1"
-  #define TOP_DATA_IN_2 "data_in_2"
-  #define TOP_DATA_IN_3 "data_in_3"
-  #define TOP_DATA_IN_4 "data_in_4"
-  #define TOP_DATA_IN_5 "data_in_5"
-  #define TOP_DATA_IN_6 "data_in_6"
-  #define TOP_DATA_IN_7 "data_in_7"
-  #define TOP_DATA_IN_8 "data_in_8"
-  #define TOP_DATA_IN_9 "data_in_9"
-  #define TOP_DATA_IN_10 "data_in_10"
-  #define TOP_DATA_IN_11 "data_in_11"
-  #define TOP_DATA_IN_12 "data_in_12"
-  #define TOP_DATA_IN_13 "data_in_13"
-  #define TOP_DATA_IN_14 "data_in_14"
-  #define TOP_DATA_IN_15 "data_in_15"
+  /////////////////////////////////////////
+  //  AXI slave interface
+  ////////////////////////////////////////
 
-  #define TOP_DATA_IN_BITWIDTH 8
+  // the slave in has both address and data
+
+  #define TOP_SLAVE_ADDR_IN "top_slave_addr_in"
+  #define TOP_SLAVE_ADDR_IN_BITWIDTH 32
+
+  #define TOP_SLAVE_DATA_IN_0 "top_slave_data_in_0"
+  #define TOP_SLAVE_DATA_IN_1 "top_slave_data_in_1"
+  #define TOP_SLAVE_DATA_IN_2 "top_slave_data_in_2"
+  #define TOP_SLAVE_DATA_IN_3 "top_slave_data_in_3"
+  #define TOP_SLAVE_DATA_IN_4 "top_slave_data_in_4"
+  #define TOP_SLAVE_DATA_IN_5 "top_slave_data_in_5"
+  #define TOP_SLAVE_DATA_IN_6 "top_slave_data_in_6"
+  #define TOP_SLAVE_DATA_IN_7 "top_slave_data_in_7"
+  #define TOP_SLAVE_DATA_IN_8 "top_slave_data_in_8"
+  #define TOP_SLAVE_DATA_IN_9 "top_slave_data_in_9"
+  #define TOP_SLAVE_DATA_IN_10 "top_slave_data_in_10"
+  #define TOP_SLAVE_DATA_IN_11 "top_slave_data_in_11"
+  #define TOP_SLAVE_DATA_IN_12 "top_slave_data_in_12"
+  #define TOP_SLAVE_DATA_IN_13 "top_slave_data_in_13"
+  #define TOP_SLAVE_DATA_IN_14 "top_slave_data_in_14"
+  #define TOP_SLAVE_DATA_IN_15 "top_slave_data_in_15"
+
+  #define TOP_SLAVE_DATA_IN_BITWIDTH 8
+
+  //////////////////////////////////////////////
+  // AXI master interface
+  //////////////////////////////////////////////
+  
+  // AXI master interface has both write and read 
+  // write as "out" and read as "in"
+
+  // don't model the write req for now.
+  // it seems that the HLSCNN only use master for reading data
+
+  // master read only has data
+  #define TOP_MASTER_IF_RD "top_master_if_rd"
+  #define TOP_MASTER_IF_RD_BITWIDTH 1
+
+  #define TOP_MASTER_RD_ADDR_OUT "top_master_rd_addr_out"
+  #define TOP_MASTER_RD_ADDR_OUT_BITWIDTH 32
+
+  // a valid signal for data in
+  // use this and top master_if_rd to immitate the behavior of push and pop
+  #define TOP_MASTER_RD_RESP_VALID_FLAG "top_master_rd_resp_valid_flag"
+  #define TOP_MASTER_RD_RESP_VALID_FLAG_BITWIDTH 1
+
+  #define TOP_MASTER_DATA_IN_0 "top_master_data_in_0"
+  #define TOP_MASTER_DATA_IN_1 "top_master_data_in_1"
+  #define TOP_MASTER_DATA_IN_2 "top_master_data_in_2"
+  #define TOP_MASTER_DATA_IN_3 "top_master_data_in_3"
+  #define TOP_MASTER_DATA_IN_4 "top_master_data_in_4"
+  #define TOP_MASTER_DATA_IN_5 "top_master_data_in_5"
+  #define TOP_MASTER_DATA_IN_6 "top_master_data_in_6"
+  #define TOP_MASTER_DATA_IN_7 "top_master_data_in_7"
+  #define TOP_MASTER_DATA_IN_8 "top_master_data_in_8"
+  #define TOP_MASTER_DATA_IN_9 "top_master_data_in_9"
+  #define TOP_MASTER_DATA_IN_10 "top_master_data_in_10"
+  #define TOP_MASTER_DATA_IN_11 "top_master_data_in_11"
+  #define TOP_MASTER_DATA_IN_12 "top_master_data_in_12"
+  #define TOP_MASTER_DATA_IN_13 "top_master_data_in_13"
+  #define TOP_MASTER_DATA_IN_14 "top_master_data_in_14"
+  #define TOP_MASTER_DATA_IN_15 "top_master_data_in_15"
+
+  #define TOP_MASTER_DATA_IN_BITWIDTH 8
+
+
+
 
   // memory address 
   // memory_map.h

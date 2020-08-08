@@ -32,25 +32,25 @@ namespace hlscnn{
 
 ExprRef GetCfgRegAlignedData(const Ila& m) {
   auto start = Concat(BvConst(0, 28),
-                      Extract(m.input(TOP_ADDR_IN), 3, 0));
+                      Extract(m.input(TOP_SLAVE_ADDR_IN), 3, 0));
   start = start << 3; // multiply by 8 to get the byte level address of data
 
-  auto data_in_0 = m.input(TOP_DATA_IN_0);
-  auto data_in_1 = m.input(TOP_DATA_IN_1);
-  auto data_in_2 = m.input(TOP_DATA_IN_2);
-  auto data_in_3 = m.input(TOP_DATA_IN_3);
-  auto data_in_4 = m.input(TOP_DATA_IN_4);
-  auto data_in_5 = m.input(TOP_DATA_IN_5);
-  auto data_in_6 = m.input(TOP_DATA_IN_6);
-  auto data_in_7 = m.input(TOP_DATA_IN_7);
-  auto data_in_8 = m.input(TOP_DATA_IN_8);
-  auto data_in_9 = m.input(TOP_DATA_IN_9);
-  auto data_in_10 = m.input(TOP_DATA_IN_10);
-  auto data_in_11 = m.input(TOP_DATA_IN_11);
-  auto data_in_12 = m.input(TOP_DATA_IN_12);
-  auto data_in_13 = m.input(TOP_DATA_IN_13);
-  auto data_in_14 = m.input(TOP_DATA_IN_14);
-  auto data_in_15 = m.input(TOP_DATA_IN_15);
+  auto data_in_0 = m.input(TOP_SLAVE_DATA_IN_0);
+  auto data_in_1 = m.input(TOP_SLAVE_DATA_IN_1);
+  auto data_in_2 = m.input(TOP_SLAVE_DATA_IN_2);
+  auto data_in_3 = m.input(TOP_SLAVE_DATA_IN_3);
+  auto data_in_4 = m.input(TOP_SLAVE_DATA_IN_4);
+  auto data_in_5 = m.input(TOP_SLAVE_DATA_IN_5);
+  auto data_in_6 = m.input(TOP_SLAVE_DATA_IN_6);
+  auto data_in_7 = m.input(TOP_SLAVE_DATA_IN_7);
+  auto data_in_8 = m.input(TOP_SLAVE_DATA_IN_8);
+  auto data_in_9 = m.input(TOP_SLAVE_DATA_IN_9);
+  auto data_in_10 = m.input(TOP_SLAVE_DATA_IN_10);
+  auto data_in_11 = m.input(TOP_SLAVE_DATA_IN_11);
+  auto data_in_12 = m.input(TOP_SLAVE_DATA_IN_12);
+  auto data_in_13 = m.input(TOP_SLAVE_DATA_IN_13);
+  auto data_in_14 = m.input(TOP_SLAVE_DATA_IN_14);
+  auto data_in_15 = m.input(TOP_SLAVE_DATA_IN_15);
 
   auto aligned_data =
     Ite(start == 0, Concat(data_in_3, Concat(data_in_2, Concat(data_in_1, data_in_0))),
@@ -73,12 +73,12 @@ ExprRef GetCfgRegAlignedData(const Ila& m) {
 
 void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name) {
   // define config write instructions
-  auto is_write = (m.input(TOP_IF_WR) & ~m.input(TOP_IF_RD));
+  auto is_write = (m.input(TOP_SLAVE_IF_WR) & ~m.input(TOP_SLAVE_IF_RD));
   // masked address.
   // "Mask off the top 8 bits, which represent the device memory map
   // offset from the CPU.""
   auto masked_addr = Concat(BvConst(0, 8), 
-                            Extract(m.input(TOP_ADDR_IN), 23, 0));
+                            Extract(m.input(TOP_SLAVE_ADDR_IN), 23, 0));
   auto is_config_addr = (masked_addr < SPAD0_BASE_ADDR);
 
   // get the aligned data. Reg data is only 32 bit

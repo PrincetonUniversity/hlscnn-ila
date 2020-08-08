@@ -39,7 +39,7 @@ Ila GetHlscnnIla(const std::string& model_name) {
   // model valid function
 
   // Define top input
-  DefineTopInput(m);
+  DefineTopIO(m);
   // Define configuration states
   DefineConfigReg(m);
   DefineFCParam(m);
@@ -48,11 +48,16 @@ Ila GetHlscnnIla(const std::string& model_name) {
 
   // Define Arch states
   DefineArchState(m);
+  DefineInternalState(m);
 
   // Define Instructions
   DefineConfigInstr(m);
-
   DefineSPADInstr(m);
+  DefineAccelConvTrigger(m);
+
+  // Define child instructions
+  DefineAXIMasterChild(m);
+  DefineAccelConvChild(m);
 
   ILA_INFO << "spad0 base addr: " << std::hex << SPAD0_BASE_ADDR;
   ILA_INFO << "spad1 base addr: " << std::hex << SPAD1_BASE_ADDR;  
