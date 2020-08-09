@@ -11,6 +11,7 @@ int main() {
   // get the ILA model
   auto hlscnn = hlscnn::GetHlscnnIla("hlscnn");
 
+  ILA_INFO << "#child: " << hlscnn.child_num();
   ILA_INFO << "#instr: " << hlscnn.instr_num();
   ILA_INFO << "#input: " << hlscnn.input_num();
   ILA_INFO << "#state: " << hlscnn.state_num();

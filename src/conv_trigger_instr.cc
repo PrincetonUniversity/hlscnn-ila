@@ -87,7 +87,9 @@ void DefineAccelConvTrigger(Ila& m) {
     instr.SetUpdate(m.state(CONV_ENABLE_BIAS), SelectBit(channel_config, 16));
     instr.SetUpdate(m.state(CONV_ENABLE_RELU), SelectBit(channel_config, 17));
     instr.SetUpdate(m.state(CONV_ENABLE_ACCUM), SelectBit(channel_config, 18));
+
     instr.SetUpdate(m.state(CONV_OFILTER_IDX), Extract(channel_config, 26, 19));
+
     instr.SetUpdate(m.state(CONV_ENABLE_WB), SelectBit(channel_config, 27));
 
     // set the child valid flag
@@ -95,7 +97,8 @@ void DefineAccelConvTrigger(Ila& m) {
     instr.SetUpdate(child_valid_flag, 
                     BvConst(ACCEL_CONV_CHILD_VALID, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH));
     
-    DefineAccelConvChild(m);
+    // the declaration of child is moved to top.
+    // DefineAccelConvChild(m);
   }
 }
 
