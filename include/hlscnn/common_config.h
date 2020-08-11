@@ -78,6 +78,9 @@ namespace hlscnn {
 #define CONV_OUTPUT_INT_BITWIDTH 12
 #define CONV_OUTPUT_FRAC_BITWIDTH (OUTPUT_TOTAL_BITWIDTH - FC_OUTPUT_INT_BITWIDTH)
 
+// conv_internal.h
+#define CONV_VECTOR_SIZE 8
+
 // this part is from utils_accel.h
 #define ACT_FUNC_WIDTH 2
 #define RELU_THRESHOLD_WIDTH 22

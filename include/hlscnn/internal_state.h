@@ -28,6 +28,7 @@
 #define _INTERNAL_STATE_H__
 
 #include <hlscnn/conv_param.h>
+#include <hlscnn/common_config.h>
 
 namespace ilang {
 namespace hlscnn {
@@ -51,9 +52,10 @@ namespace hlscnn {
 #define MASTER_AXI_CHILD_STATE_SPAD1_RD 1
 #define MASTER_AXI_CHILD_STATE_ACT_RD 2
 
-#define ACCEL_MASTER_AXI_CHILD_RD_RECV_VALID_FLAG                                     \
-  "accel_master_axi_child_rd_recv_valid_flag"
-#define ACCEL_MASTER_AXI_CHILD_RD_RECV_VALID_FLAG_BITWIDTH 1
+// #define ACCEL_MASTER_AXI_CHILD_RD_RECV_VALID_FLAG                                     \
+//   "accel_master_axi_child_rd_recv_valid_flag"
+// #define ACCEL_MASTER_AXI_CHILD_RD_RECV_VALID_FLAG_BITWIDTH 1
+
 /////////////////////////////////////////////
 //      interanl states of Conv
 /////////////////////////////////////////////
@@ -67,11 +69,21 @@ namespace hlscnn {
 #define ACCEL_CONV_CHILD_STATE_BITWIDTH 4
 
 #define CONV_CHILD_STATE_IDLE 0
+//FSM state related to activation fetching
 #define CONV_CHILD_STATE_ACT_FILTER_ID 1
 #define CONV_CHILD_STATE_ACT_INPUT_CHANNEL_BLOCK 2
 #define CONV_CHILD_STATE_ACT_INPUT_ROW 3
 #define CONV_CHILD_STATE_ACT_INPUT_COL 4
 #define CONV_CHILD_STATE_ACT_SEND_RD_REQ 5
+#define CONV_CHILD_STATE_ACT_RECV_RD_RESP 6
+// FSM state related to weight fetching
+#define CONV_CHILD_STATE_WEIGHT_INIT 7
+#define CONV_CHILD_STATE_WEIGHT_ROW_FETCH 8
+#define CONV_CHILD_STATE_WEIGHT_COL_FETCH 9
+#define CONV_CHILD_STATE_WEIGHT_CHECK_BOUND 10
+#define CONV_CHILD_STATE_WEIGHT_SEND_DP 11
+
+
 
 #define CONV_CHILD_STATE_DONE 15
 
@@ -87,6 +99,26 @@ namespace hlscnn {
 #define CONV_CHILD_INPUT_COL_ID "conv_child_input_col_id"
 #define CONV_CHILD_INPUT_COL_ID_BITWIDTH CONV_ROW_SIZE_T
 
+#define CONV_CHILD_KERNEL_COL_ID "conv_child_kernel_col_id"
+#define CONV_CHILD_KERNEL_COL_ID_BITWIDTH CONV_KERNEL_SIZE_T
+
+#define CONV_CHILD_KERNEL_ROW_ID "conv_child_kernel_row_id"
+#define CONV_CHILD_KERNEL_ROW_ID_BITWIDTH CONV_KERNEL_SIZE_T
+
+#define CONV_CHILD_ACT_ARRAY "conv_child_act_array"
+#define CONV_CHILD_ACT_ARRAY_0 "conv_child_act_array_0"
+#define CONV_CHILD_ACT_ARRAY_1 "conv_child_act_array_1"
+#define CONV_CHILD_ACT_ARRAY_2 "conv_child_act_array_2"
+#define CONV_CHILD_ACT_ARRAY_3 "conv_child_act_array_3"
+#define CONV_CHILD_ACT_ARRAY_4 "conv_child_act_array_4"
+#define CONV_CHILD_ACT_ARRAY_5 "conv_child_act_array_5"
+#define CONV_CHILD_ACT_ARRAY_6 "conv_child_act_array_6"
+#define CONV_CHILD_ACT_ARRAY_7 "conv_child_act_array_7"
+
+#define CONV_CHILD_ACT_ARRAY_BITWIDTH ACT_TOTAL_BITWIDTH
+
+#define CONV_CHILD_WEIGHT_ADDR "conv_child_weight_addr"
+#define CONV_CHILD_WEIGHT_ADDR_BITWIDTH TOP_SLAVE_ADDR_IN_BITWIDTH
 
 
 

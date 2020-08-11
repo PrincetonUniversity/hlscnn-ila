@@ -32,13 +32,13 @@
 #include <ilang/util/log.h>
 
 #include <hlscnn/top_config.h>
+#include <hlscnn/common_config.h>
 #include <hlscnn/config_reg.h>
-#include <hlscnn/utils.h>
 #include <hlscnn/conv_param.h>
 #include <hlscnn/fc_param.h>
 #include <hlscnn/reduction_param.h>
-#include <hlscnn/common_config.h>
 #include <hlscnn/internal_state.h>
+#include <hlscnn/utils.h>
 
 namespace ilang {
 

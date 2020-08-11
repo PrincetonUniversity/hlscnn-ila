@@ -44,6 +44,7 @@ void DefineInternalState(Ila& m) {
   ///////////////////////////////////
   m.NewBvState(ACCEL_CONV_CHILD_VALID_FLAG, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH);
 
+
 }
 
 } // namespace hlscnn 

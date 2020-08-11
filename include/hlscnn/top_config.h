@@ -92,6 +92,7 @@ namespace hlscnn {
   #define TOP_MASTER_RD_RESP_VALID_FLAG "top_master_rd_resp_valid_flag"
   #define TOP_MASTER_RD_RESP_VALID_FLAG_BITWIDTH 1
 
+  #define TOP_MASTER_DATA_IN "top_master_data_in"
   #define TOP_MASTER_DATA_IN_0 "top_master_data_in_0"
   #define TOP_MASTER_DATA_IN_1 "top_master_data_in_1"
   #define TOP_MASTER_DATA_IN_2 "top_master_data_in_2"
