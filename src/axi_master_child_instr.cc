@@ -42,9 +42,10 @@ void DefineAXIMasterChild(Ila& m) {
   auto rd_resp_valid_flag = m.input(TOP_MASTER_RD_RESP_VALID_FLAG);
 
   child.AddInit(rd_resp_valid_flag == ACCEL_MASTER_AXI_CHILD_INVALID);
+  child.AddInit(state == MASTER_AXI_CHILD_STATE_IDLE);
 
   { // instr 0 ---- AXI master read req for weights or activations to MEM ()
-    auto instr = child.NewInstr("accel_axi_master_rd_req_spad0");
+    auto instr = child.NewInstr("accel_axi_master_rd_req_spad");
     auto is_instr_valid = ((rd_resp_valid_flag == ACCEL_MASTER_AXI_CHILD_INVALID) &
                             ((state == MASTER_AXI_CHILD_STATE_SPAD0_RD) |  
                               (state == MASTER_AXI_CHILD_STATE_SPAD1_RD)));
@@ -61,7 +62,7 @@ void DefineAXIMasterChild(Ila& m) {
   }
 
   { // instr 1 ---- AXI master receive the data from mem and write it into SPAD
-    auto instr = child.NewInstr("accel_axi_master_rd_recv_spad0");
+    auto instr = child.NewInstr("accel_axi_master_rd_recv_spad");
     auto is_instr_valid = ((rd_resp_valid_flag == ACCEL_MASTER_AXI_CHILD_VALID) &
                             ((state == MASTER_AXI_CHILD_STATE_SPAD0_RD) |  
                               (state == MASTER_AXI_CHILD_STATE_SPAD1_RD)));
@@ -95,6 +96,9 @@ void DefineAXIMasterChild(Ila& m) {
     
     instr.SetUpdate(m.state(TOP_MASTER_IF_RD), 
                     BvConst(ACCEL_MASTER_AXI_CHILD_INVALID, TOP_MASTER_IF_RD_BITWIDTH));
+    
+    instr.SetUpdate(state,
+                    BvConst(MASTER_AXI_CHILD_STATE_IDLE, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
 
     instr.SetUpdate(m.state(ACCEL_MASTER_AXI_CHILD_VALID_FLAG),
                     BvConst(ACCEL_MASTER_AXI_CHILD_INVALID, TOP_MASTER_IF_RD_BITWIDTH));

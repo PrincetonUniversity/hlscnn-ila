@@ -48,9 +48,10 @@ namespace hlscnn {
 #define ACCEL_MASTER_AXI_CHILD_STATE "accel_master_axi_child_state"
 #define ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH 3
 
-#define MASTER_AXI_CHILD_STATE_SPAD0_RD 0
-#define MASTER_AXI_CHILD_STATE_SPAD1_RD 1
-#define MASTER_AXI_CHILD_STATE_ACT_RD 2
+#define MASTER_AXI_CHILD_STATE_IDLE 0
+#define MASTER_AXI_CHILD_STATE_SPAD0_RD 1
+#define MASTER_AXI_CHILD_STATE_SPAD1_RD 2
+#define MASTER_AXI_CHILD_STATE_ACT_RD 3
 
 // #define ACCEL_MASTER_AXI_CHILD_RD_RECV_VALID_FLAG                                     \
 //   "accel_master_axi_child_rd_recv_valid_flag"

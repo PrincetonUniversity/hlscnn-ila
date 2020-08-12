@@ -76,8 +76,37 @@ inline ExprRef conv_out_of_bound(Ila& child, const ExprRef& input_row,
 	// 	}
 	// 	return idx_out_of_bound;
 	// }
-  
+  auto last_kernel_row = child.state(CONV_KERNEL_ROW_NUM);
+  auto last_kernel_col = child.state(CONV_KERNEL_COL_NUM);
+  auto last_row = child.state(CONV_INPUT_ROW_NUM);
+  auto last_col = child.state(CONV_INPUT_COL_NUM);
 
+  // input_row and input_col have the largest bit-width
+  auto ext_bitwidth = input_row.bit_width();
+  // input_row and input_col should have the same bitwidth.
+  ILA_ASSERT(input_row.bit_width() == input_col.bit_width());
+
+  auto last_kernel_row_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_row.bit_width()),
+                                    last_kernel_row);
+  auto last_kernel_col_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_col.bit_width()),
+                                    last_kernel_col);
+  auto last_row_ext = Concat(BvConst(0, ext_bitwidth-last_row.bit_width()), last_row);
+  auto last_col_ext = Concat(BvConst(0, ext_bitwidth-last_col.bit_width()), last_col);
+  auto k_row_ext = Concat(BvConst(0, ext_bitwidth-k_row.bit_width()), k_row);
+  auto k_col_ext = Concat(BvConst(0, ext_bitwidth-k_col.bit_width()), k_col);
+
+  auto cond_0 = 
+        ((input_row + last_kernel_row_ext / BvConst(2,ext_bitwidth) - k_row_ext) >= last_row_ext);
+  auto cond_1 = 
+        ((input_col + last_kernel_col_ext / BvConst(2,ext_bitwidth) - k_col_ext) >= last_col_ext);
+  auto cond_2 = 
+        ((input_row + last_kernel_row_ext / BvConst(2,ext_bitwidth)) < k_row_ext);
+  auto cond_3 = 
+        ((input_col + last_kernel_col_ext / BvConst(2,ext_bitwidth)) < k_col_ext);
+  
+  auto is_out_of_bound = cond_0 | cond_1 | cond_2 | cond_3;
+
+  return is_out_of_bound;
 }
 
 ExprRef GetCfgRegAlignedData(const Ila& m);

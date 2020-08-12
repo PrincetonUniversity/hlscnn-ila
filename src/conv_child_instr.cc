@@ -201,6 +201,8 @@ void DefineConvActFetch(Ila& child) {
     instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
     instr.SetUpdate(child.state(TOP_MASTER_IF_RD), 
                     BvConst(ACCEL_CONV_CHILD_VALID, TOP_MASTER_IF_RD_BITWIDTH));
+    instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_STATE),
+            BvConst(MASTER_AXI_CHILD_STATE_ACT_RD, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
     
     // setting the next state
     auto next_state = BvConst(CONV_CHILD_STATE_ACT_RECV_RD_RESP, ACCEL_CONV_CHILD_STATE_BITWIDTH);
@@ -226,6 +228,8 @@ void DefineConvActFetch(Ila& child) {
     // set axi master rd command off
     instr.SetUpdate(child.state(TOP_MASTER_IF_RD),
                     BvConst(ACCEL_CONV_CHILD_INVALID, TOP_MASTER_IF_RD_BITWIDTH));
+    instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_STATE),
+                    BvConst(MASTER_AXI_CHILD_STATE_IDLE, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
 
     auto next_state = BvConst(CONV_CHILD_STATE_WEIGHT_INIT,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
@@ -306,7 +310,7 @@ void DefineConvWeightFetch(Ila& child) {
   }
 
   { // instr ---- check out-of-bound condition
-    auto instr = child.NewInstr("accel_conv_child_weight_send_dp");
+    auto instr = child.NewInstr("accel_conv_check_out_of_bound");
     instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_CHECK_BOUND);
 
     auto is_out_of_bound = conv_out_of_bound(child, act_row, act_col, kern_row, kern_col);
@@ -317,6 +321,13 @@ void DefineConvWeightFetch(Ila& child) {
         BvConst(CONV_CHILD_STATE_WEIGHT_SEND_DP, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
     instr.SetUpdate(state, next_state);
+  }
+
+  { // instr ---- send weights and act to datapath
+    auto instr = child.NewInstr("accel_conv_send_dp");
+    instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_SEND_DP);
+    
+
   }
 
 }
