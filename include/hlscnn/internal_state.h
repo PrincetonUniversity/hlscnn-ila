@@ -83,6 +83,8 @@ namespace hlscnn {
 #define CONV_CHILD_STATE_WEIGHT_COL_FETCH 9
 #define CONV_CHILD_STATE_WEIGHT_CHECK_BOUND 10
 #define CONV_CHILD_STATE_WEIGHT_SEND_DP 11
+// FSM state related to datapath 
+#define CONV_CHILD_STATE_DP_MAC_PSUM 12
 
 
 
@@ -120,6 +122,26 @@ namespace hlscnn {
 
 #define CONV_CHILD_WEIGHT_ADDR "conv_child_weight_addr"
 #define CONV_CHILD_WEIGHT_ADDR_BITWIDTH TOP_SLAVE_ADDR_IN_BITWIDTH
+
+#define CONV_CHILD_WEIGHT_ARRAY "conv_child_weight_array"
+#define CONV_CHILD_WEIGHT_ARRAY_0 "conv_child_weight_array_0"
+#define CONV_CHILD_WEIGHT_ARRAY_1 "conv_child_weight_array_1"
+#define CONV_CHILD_WEIGHT_ARRAY_2 "conv_child_weight_array_2"
+#define CONV_CHILD_WEIGHT_ARRAY_3 "conv_child_weight_array_3"
+#define CONV_CHILD_WEIGHT_ARRAY_4 "conv_child_weight_array_4"
+#define CONV_CHILD_WEIGHT_ARRAY_5 "conv_child_weight_array_5"
+#define CONV_CHILD_WEIGHT_ARRAY_6 "conv_child_weight_array_6"
+#define CONV_CHILD_WEIGHT_ARRAY_7 "conv_child_weight_array_7"
+
+#define CONV_CHILD_WEIGHT_ARRAY_BITWIDTH WEIGHT_TOTAL_BITWIDTH
+
+#define CONV_CHILD_MAC_PSUM "conv_child_mac_psum"
+#define CONV_CHILD_MAC_PSUM_BITWIDTH PSUM_TOTAL_BITWIDTH
+
+#define CONV_CHILD_ACTIVATION_PSUM "conv_child_activation_psum"
+#define CONV_CHILD_ACTIVATION_PSUM_BITWIDTH ACT_TOTAL_BITWIDTH
+
+
 
 
 

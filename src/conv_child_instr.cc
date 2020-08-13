@@ -34,6 +34,15 @@ namespace hlscnn {
 void DefineConvActFetch(Ila& child);
 void DefineConvWeightFetch(Ila& child);
 void DefineConvDatapath(Ila& child);
+void DefineConvOutput(Ila& child);
+
+auto mul_in = SortRef::BV(WEIGHT_TOTAL_BITWIDTH);
+auto mul_out = SortRef::BV(PSUM_TOTAL_BITWIDTH);
+FuncRef ConvMacPsumMul("ConvMacPsumMul", mul_out, mul_in, mul_in);
+
+auto psum_type = SortRef::BV(PSUM_TOTAL_BITWIDTH);
+auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
+FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
 
 void DefineAccelConvChild(Ila& m) {
   auto child = m.NewChild("Accel_Conv_Child");
@@ -51,10 +60,18 @@ void DefineAccelConvChild(Ila& m) {
 
   child.NewBvState(CONV_CHILD_KERNEL_COL_ID, CONV_CHILD_KERNEL_COL_ID_BITWIDTH);
   child.NewBvState(CONV_CHILD_KERNEL_ROW_ID, CONV_CHILD_KERNEL_ROW_ID_BITWIDTH);
+
+  child.NewBvState(CONV_CHILD_WEIGHT_ADDR, CONV_CHILD_WEIGHT_ADDR_BITWIDTH);
+
+  child.NewBvState(CONV_CHILD_ACTIVATION_PSUM, CONV_CHILD_ACTIVATION_PSUM_BITWIDTH);
   
   for (int i = 0; i < CONV_VECTOR_SIZE; i++) {
-    auto state_name = GetStateName(CONV_CHILD_ACT_ARRAY, i);
-    child.NewBvState(state_name, CONV_CHILD_ACT_ARRAY_BITWIDTH);
+    // act array
+    auto act_v_name = GetStateName(CONV_CHILD_ACT_ARRAY, i);
+    child.NewBvState(act_v_name, CONV_CHILD_ACT_ARRAY_BITWIDTH);
+    // weight array
+    auto weight_v_name = GetStateName(CONV_CHILD_WEIGHT_ARRAY, i);
+    child.NewBvState(weight_v_name, CONV_CHILD_WEIGHT_ARRAY_BITWIDTH);
   }
   
   child.AddInit(state == CONV_CHILD_STATE_IDLE);
@@ -74,7 +91,8 @@ void DefineAccelConvChild(Ila& m) {
   // and datapath
   DefineConvActFetch(child);
   DefineConvWeightFetch(child);
-  // DefineConvDatapath(child);
+  DefineConvDatapath(child);
+  // DefineConvOutput(child);
   
 }
 
@@ -326,12 +344,47 @@ void DefineConvWeightFetch(Ila& child) {
   { // instr ---- send weights and act to datapath
     auto instr = child.NewInstr("accel_conv_send_dp");
     instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_SEND_DP);
-    
 
+    // TODO: this address should be vector level (128bit) address
+    auto weight_req_addr = WtGetAddr(child, filter_idx, kern_row, kern_col, chan_block);
+    auto spad_addr_base = weight_req_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    auto spad0 = child.state(SCRATCH_PAD_0);
+
+    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+      auto wt_array_element = child.state(GetStateName(CONV_CHILD_WEIGHT_ARRAY, i));
+      auto wt_byte_0 = Load(spad0, spad_addr_base + i*2);
+      auto wt_byte_1 = Load(spad0, spad_addr_base + i*2 + 1);
+      instr.SetUpdate(wt_array_element, Concat(wt_byte_1, wt_byte_0));
+    }
+
+    auto next_state = BvConst(CONV_CHILD_STATE_DP_MAC_PSUM,
+                              ACCEL_CONV_CHILD_STATE_BITWIDTH);
+
+    instr.SetUpdate(state, next_state);
+  }
+}
+
+void DefineConvDatapath(Ila& child) {
+  auto state = child.state(ACCEL_CONV_CHILD_STATE);
+
+  { // instr ---- calculate the mac_psum
+    auto instr = child.NewInstr("conv_child_dp_mac_psum");
+    instr.SetDecode(state == CONV_CHILD_STATE_DP_MAC_PSUM);
+
+    auto mac_psum = BvConst(0, PSUM_TOTAL_BITWIDTH);
+
+    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+      auto weight = child.state(GetStateName(CONV_CHILD_WEIGHT_ARRAY, i));
+      auto act = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
+      mac_psum = mac_psum + ConvMacPsumMul(weight, act);
+    }
+
+    auto act_psum = Psum2Act(mac_psum);
+    instr.SetUpdate(child.state(CONV_CHILD_ACTIVATION_PSUM), act_psum);  
+    
   }
 
 }
-
 
 
 } // hlscnn
