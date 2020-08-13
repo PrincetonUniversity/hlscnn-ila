@@ -67,7 +67,7 @@ namespace hlscnn {
 #define ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH 1
 
 #define ACCEL_CONV_CHILD_STATE "accel_conv_child_state"
-#define ACCEL_CONV_CHILD_STATE_BITWIDTH 4
+#define ACCEL_CONV_CHILD_STATE_BITWIDTH 5
 
 #define CONV_CHILD_STATE_IDLE 0
 //FSM state related to activation fetching
@@ -85,10 +85,11 @@ namespace hlscnn {
 #define CONV_CHILD_STATE_WEIGHT_SEND_DP 11
 // FSM state related to datapath 
 #define CONV_CHILD_STATE_DP_MAC_PSUM 12
+#define CONV_CHILD_STATE_FETCH_OUT_ACT 13
+#define CONV_CHILD_STATE_BIAS_RELU 14
+#define CONV_CHILD_STATE_OUT 15
 
-
-
-#define CONV_CHILD_STATE_DONE 15
+#define CONV_CHILD_STATE_DONE 31
 
 #define CONV_CHILD_FILTER_ID "conv_child_filter_id"
 #define CONV_CHILD_FILTER_ID_BITWIDTH CONV_FILTER_SIZE_T
@@ -134,6 +135,30 @@ namespace hlscnn {
 #define CONV_CHILD_WEIGHT_ARRAY_7 "conv_child_weight_array_7"
 
 #define CONV_CHILD_WEIGHT_ARRAY_BITWIDTH WEIGHT_TOTAL_BITWIDTH
+
+#define CONV_CHILD_O_ACT_ARRAY "conv_child_o_act_array"
+#define CONV_CHILD_O_ACT_ARRAY_0 "conv_child_o_act_array_0"
+#define CONV_CHILD_O_ACT_ARRAY_1 "conv_child_o_act_array_1"
+#define CONV_CHILD_O_ACT_ARRAY_2 "conv_child_o_act_array_2"
+#define CONV_CHILD_O_ACT_ARRAY_3 "conv_child_o_act_array_3"
+#define CONV_CHILD_O_ACT_ARRAY_4 "conv_child_o_act_array_4"
+#define CONV_CHILD_O_ACT_ARRAY_5 "conv_child_o_act_array_5"
+#define CONV_CHILD_O_ACT_ARRAY_6 "conv_child_o_act_array_6"
+#define CONV_CHILD_O_ACT_ARRAY_7 "conv_child_o_act_array_7"
+
+#define CONV_CHILD_O_ACT_ARRAY_BITWIDTH ACT_TOTAL_BITWIDTH
+
+#define CONV_CHILD_OUT_ARRAY "conv_child_out_array"
+#define CONV_CHILD_OUT_ARRAY_0 "conv_child_out_array_0"
+#define CONV_CHILD_OUT_ARRAY_1 "conv_child_out_array_1"
+#define CONV_CHILD_OUT_ARRAY_2 "conv_child_out_array_2"
+#define CONV_CHILD_OUT_ARRAY_3 "conv_child_out_array_3"
+#define CONV_CHILD_OUT_ARRAY_4 "conv_child_out_array_4"
+#define CONV_CHILD_OUT_ARRAY_5 "conv_child_out_array_5"
+#define CONV_CHILD_OUT_ARRAY_6 "conv_child_out_array_6"
+#define CONV_CHILD_OUT_ARRAY_7 "conv_child_out_array_7"
+
+#define CONV_CHILD_OUT_ARRAY_BITWIDTH ACT_TOTAL_BITWIDTH
 
 #define CONV_CHILD_MAC_PSUM "conv_child_mac_psum"
 #define CONV_CHILD_MAC_PSUM_BITWIDTH PSUM_TOTAL_BITWIDTH

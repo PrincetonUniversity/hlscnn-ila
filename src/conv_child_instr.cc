@@ -34,7 +34,6 @@ namespace hlscnn {
 void DefineConvActFetch(Ila& child);
 void DefineConvWeightFetch(Ila& child);
 void DefineConvDatapath(Ila& child);
-void DefineConvOutput(Ila& child);
 
 auto mul_in = SortRef::BV(WEIGHT_TOTAL_BITWIDTH);
 auto mul_out = SortRef::BV(PSUM_TOTAL_BITWIDTH);
@@ -43,6 +42,10 @@ FuncRef ConvMacPsumMul("ConvMacPsumMul", mul_out, mul_in, mul_in);
 auto psum_type = SortRef::BV(PSUM_TOTAL_BITWIDTH);
 auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
 FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
+
+auto act_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
+FuncRef ActAdd("ActAdd", act_type, act_type, act_type);
+FuncRef ActRelu("ActRelu", act_type, act_type);
 
 void DefineAccelConvChild(Ila& m) {
   auto child = m.NewChild("Accel_Conv_Child");
@@ -72,9 +75,16 @@ void DefineAccelConvChild(Ila& m) {
     // weight array
     auto weight_v_name = GetStateName(CONV_CHILD_WEIGHT_ARRAY, i);
     child.NewBvState(weight_v_name, CONV_CHILD_WEIGHT_ARRAY_BITWIDTH);
+    // oact array
+    auto oact_v_name = GetStateName(CONV_CHILD_O_ACT_ARRAY, i);
+    child.NewBvState(oact_v_name, CONV_CHILD_O_ACT_ARRAY_BITWIDTH);
+    // out array
+    auto out_v_name = GetStateName(CONV_CHILD_OUT_ARRAY, i);
+    child.NewBvState(out_v_name, CONV_CHILD_OUT_ARRAY_BITWIDTH);
   }
   
   child.AddInit(state == CONV_CHILD_STATE_IDLE);
+
 
   // ILA_INFO << "child_state number: " << child.state_num();
   // ILA_INFO << child.state(CONV_OFILTER_IDX);
@@ -91,9 +101,7 @@ void DefineAccelConvChild(Ila& m) {
   // and datapath
   DefineConvActFetch(child);
   DefineConvWeightFetch(child);
-  DefineConvDatapath(child);
-  // DefineConvOutput(child);
-  
+  DefineConvDatapath(child);  
 }
 
 void DefineConvActFetch(Ila& child) {
@@ -107,6 +115,8 @@ void DefineConvActFetch(Ila& child) {
   auto input_col = child.state(CONV_CHILD_INPUT_COL_ID);
 
   { // instr ---- start Activation fetching
+    // initilizting the loop parameter, setting them to zero, thus the next state should
+    // jump to weight fetching
     auto instr = child.NewInstr("accel_conv_child_start");
     instr.SetDecode(state == CONV_CHILD_STATE_IDLE);
 
@@ -116,13 +126,29 @@ void DefineConvActFetch(Ila& child) {
     instr.SetUpdate(input_col, BvConst(0, CONV_CHILD_INPUT_COL_ID_BITWIDTH));
 
     //TODO: at the start, the next state should directly jump to the weight fetching!
-    auto next_state = BvConst(CONV_CHILD_STATE_ACT_FILTER_ID,
+    auto next_state = BvConst(CONV_CHILD_STATE_ACT_SEND_RD_REQ,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
+    // reset the out_array
+    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+      instr.SetUpdate(child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i)), 
+                      BvConst(0, CONV_CHILD_OUT_ARRAY_BITWIDTH));
+    }
     
     instr.SetUpdate(state, next_state);
   }
 
+  { // instr ---- conv done 
+    auto instr = child.NewInstr("accel_conv_done");
+    instr.SetDecode(state == CONV_CHILD_STATE_DONE);
+
+    instr.SetUpdate(state, 
+      BvConst(CONV_CHILD_STATE_IDLE, ACCEL_CONV_CHILD_STATE_BITWIDTH));
+    instr.SetUpdate(child.state(ACCEL_CONV_CHILD_VALID_FLAG),
+      BvConst(ACCEL_CONV_CHILD_INVALID, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH));
+  }
+
   { // instr ---- setting filter_idx
+    // incrementing filter_idx, or conv done
     auto instr = child.NewInstr("accel_conv_child_act_filter_idx");
     instr.SetDecode(state == CONV_CHILD_STATE_ACT_FILTER_ID);
 
@@ -228,6 +254,7 @@ void DefineConvActFetch(Ila& child) {
   }
 
   { // instr ---- receiving activations
+    // TODO: this instr is to be abstracted. we shouldn't model the low level AXI details
     auto instr = child.NewInstr("accel_conv_child_act_recv_rd_resp");
     // this instructions should wait for the resp of axi master rd
     auto decode_cond = ((state == CONV_CHILD_STATE_ACT_RECV_RD_RESP) &
@@ -277,13 +304,15 @@ void DefineConvWeightFetch(Ila& child) {
   auto kern_col_init = Extract(URem(act_col, col_stride_ext), kern_col.bit_width()-1, 0);
 
   { // instr ---- initializing the weight fetching parameters
+    // this part setting the kern_row and kern_col to zero, thus the next state should jump to
+    // check out-of-bound, no need to increment the loop param for this one
     auto instr = child.NewInstr("accel_conv_child_weight_init");
     instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_INIT);
 
     instr.SetUpdate(kern_row, kern_row_init);
     instr.SetUpdate(kern_col, kern_col_init);
 
-    auto next_state = BvConst(CONV_CHILD_STATE_WEIGHT_ROW_FETCH,
+    auto next_state = BvConst(CONV_CHILD_STATE_WEIGHT_CHECK_BOUND,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
     
     instr.SetUpdate(state, next_state);
@@ -381,7 +410,116 @@ void DefineConvDatapath(Ila& child) {
 
     auto act_psum = Psum2Act(mac_psum);
     instr.SetUpdate(child.state(CONV_CHILD_ACTIVATION_PSUM), act_psum);  
+
+    auto next_state = BvConst(CONV_CHILD_STATE_FETCH_OUT_ACT,
+                              ACCEL_CONV_CHILD_STATE_BITWIDTH);
+    instr.SetUpdate(state, next_state);
+  }
+
+  { // instr ---- fetching previous activations from spad1
+    auto instr = child.NewInstr("conv_child_fetch_act_spad1");
+    instr.SetDecode(state == CONV_CHILD_STATE_FETCH_OUT_ACT);
+
+    auto act_row = child.state(CONV_CHILD_INPUT_ROW_ID);
+    auto act_col = child.state(CONV_CHILD_INPUT_COL_ID);
+    auto k_row = child.state(CONV_CHILD_KERNEL_ROW_ID);
+    auto k_col = child.state(CONV_CHILD_KERNEL_COL_ID);
+    auto act_filter_id = child.state(CONV_CHILD_FILTER_ID);
     
+    //TODO: this address should be vector level address (128bit)
+    auto oactfetch_addr = OutActGetAddr(child, act_row, act_col, k_row, k_col, act_filter_id);
+    auto spad1_base_addr = oactfetch_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    auto spad1 = child.state(SCRATCH_PAD_1);
+
+    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+      auto oact_element = child.state(GetStateName(CONV_CHILD_O_ACT_ARRAY, i));
+      auto oact_byte_0 = Load(spad1, spad1_base_addr + 2*i);
+      auto oact_byte_1 = Load(spad1, spad1_base_addr + 2*i + 1);
+      instr.SetUpdate(oact_element, Concat(oact_byte_1, oact_byte_0));
+    }
+
+    auto next_state = BvConst(CONV_CHILD_STATE_BIAS_RELU, ACCEL_CONV_CHILD_STATE_BITWIDTH);
+    instr.SetUpdate(state, next_state);
+  }
+
+  { // instr ---- add bias and relu
+    // TODO: if this instr execute too slow, can divided them into 3 instructions
+    auto instr = child.NewInstr("conv_child_dp_bias_relu");
+    instr.SetDecode(state == CONV_CHILD_STATE_BIAS_RELU);
+
+    auto psum_val = child.state(CONV_CHILD_ACTIVATION_PSUM);
+
+    // ------------------------------------------------------------------
+    auto wbk_row = child.state(CONV_CHILD_KERNEL_ROW_ID);
+    auto wbk_col = child.state(CONV_CHILD_KERNEL_COL_ID);
+    auto wbact_chblk = child.state(CONV_CHILD_CHAN_BLOCK_ID);
+
+    auto is_first_psum = (wbk_row==0) & (wbk_col==0) & (wbact_chblk==0);
+    auto en_accum = child.state(CONV_ENABLE_ACCUM);
+
+    auto ofilter_idx = child.state(CONV_OFILTER_IDX);
+    auto wbact_idx = URem(ofilter_idx - 1, BvConst(CONV_VECTOR_SIZE, ofilter_idx.bit_width()));
+    auto oact_element = GetActVectorState(child, CONV_CHILD_O_ACT_ARRAY, wbact_idx);
+
+    auto oact_out = Ite(is_first_psum & (en_accum == 0),
+                        psum_val, ActAdd(psum_val, oact_element));
+    // ------------------------------------------------------------------
+    auto wbact_row = child.state(CONV_CHILD_INPUT_ROW_ID);
+    auto wbact_col = child.state(CONV_CHILD_INPUT_COL_ID);
+
+    auto is_last_psum = WtIsLastPsum(child, wbact_row, wbact_col, wbk_row, wbk_col, wbact_chblk);
+    auto en_bias = child.state(CONV_ENABLE_BIAS);
+    auto chan_bias = child.state(CONV_CHAN_BIAS);
+
+    oact_out = Ite(is_last_psum & (en_bias != 0), 
+                   ActAdd(oact_out, chan_bias), oact_out);
+    
+    auto en_relu = child.state(CONV_ENABLE_RELU);
+
+    oact_out = Ite(is_last_psum & (en_relu != 0),
+                   ActRelu(oact_out), oact_out);
+    // ------------------------------------------------------------------
+    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+      auto out_element = child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i));
+      auto out_element_next = Ite(wbact_idx == i, oact_out, out_element);
+      instr.SetUpdate(out_element, out_element_next);
+    }
+
+    auto next_state = BvConst(CONV_CHILD_STATE_OUT, ACCEL_CONV_CHILD_STATE_BITWIDTH);
+    instr.SetUpdate(state, next_state);
+  }
+
+  { // instr ---- write result into spad1
+    auto instr = child.NewInstr("conv_child_output");
+    instr.SetDecode(state == CONV_CHILD_STATE_OUT);
+
+    auto act_row = child.state(CONV_CHILD_INPUT_ROW_ID);
+    auto act_col = child.state(CONV_CHILD_INPUT_COL_ID);
+    auto k_row = child.state(CONV_CHILD_KERNEL_ROW_ID);
+    auto k_col = child.state(CONV_CHILD_KERNEL_COL_ID);
+    auto act_filter_id = child.state(CONV_CHILD_FILTER_ID);
+    
+    //TODO: this address should be vector level address (128bit)
+    auto out_addr = OutActGetAddr(child, act_row, act_col, k_row, k_col, act_filter_id);
+    auto spad1_base_addr = out_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    auto spad1 = child.state(SCRATCH_PAD_1);
+    auto spad1_next = spad1;
+
+    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+      auto out_element = child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i));
+      auto out_byte_0 = Extract(out_element, 7, 0);
+      auto out_byte_1 = Extract(out_element, 15, 8);
+      spad1_next = Store(spad1_next, spad1_base_addr + 2*i, out_byte_0);
+      spad1_next = Store(spad1_next, spad1_base_addr + 2*i + 1, out_byte_1);
+    }
+
+    instr.SetUpdate(spad1, spad1_next);
+
+    // next state should jump back to the innerest loop, which is incrementing kern_col
+    auto next_state = 
+      BvConst(CONV_CHILD_STATE_WEIGHT_COL_FETCH, ACCEL_CONV_CHILD_STATE_BITWIDTH);
+
+    instr.SetUpdate(state, next_state);
   }
 
 }

@@ -41,113 +41,46 @@ inline std::string GetStateName(const std::string& name, const int& idx) {
   return (name + "_" + std::to_string(idx));
 }
 
-inline ExprRef act_gen_get_addr(const Ila& child, const ExprRef& input_row,
-                                                  const ExprRef& input_col,
-                                                  const ExprRef& chan_block) {
-//channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
-// + in_row*(input_cols*CHANNEL_BLOCK_SIZE) + in_col*CHANNEL_BLOCK_SIZE)*(ACTIVATION_TOT_WIDTH/8);
-  auto base_addr = child.state(CFG_REG_ACCEL_CONV_ACT_BASE_ADDR);
-  auto input_row_ext = Concat(BvConst(0,32-input_row.bit_width()), input_row);
-  auto input_col_ext = Concat(BvConst(0,32-input_col.bit_width()), input_col);
-  auto chan_block_ext = Concat(BvConst(0,32-chan_block.bit_width()), chan_block);
-  auto chan_block_size = BvConst(CHANNEL_BLOCK_SIZE, 32);
-  auto act_tot_width = BvConst(ACT_TOTAL_BITWIDTH, 32);
-
-  auto act_addr = base_addr + 
-                  ((chan_block_ext * input_row_ext * input_col_ext * chan_block_size) +
-                    input_row_ext * (input_col_ext * chan_block_size) +
-                    input_col_ext * chan_block_size) * (ACT_TOTAL_BITWIDTH/8);
-  
-  return act_addr;
+inline ExprRef GetActVectorState(const Ila& child, const std::string& name,
+                                                        const ExprRef& idx) {
+  auto value = 
+    Ite(idx == 0, child.state(GetStateName(name, 0)),
+    Ite(idx == 1, child.state(GetStateName(name, 1)),
+    Ite(idx == 2, child.state(GetStateName(name, 2)),
+    Ite(idx == 3, child.state(GetStateName(name, 3)),
+    Ite(idx == 4, child.state(GetStateName(name, 4)),
+    Ite(idx == 5, child.state(GetStateName(name, 5)),
+    Ite(idx == 6, child.state(GetStateName(name, 6)),
+                  child.state(GetStateName(name, 7))
+                  )))))));
+  return value;
 }
 
-inline ExprRef conv_out_of_bound(const Ila& child, const ExprRef& input_row,
+ExprRef act_gen_get_addr(const Ila& child, const ExprRef& input_row,
+                                                  const ExprRef& input_col,
+                                                  const ExprRef& chan_block);
+
+ExprRef conv_out_of_bound(const Ila& child, const ExprRef& input_row,
                                                    const ExprRef& input_col,
                                                    const ExprRef& k_row,
-                                                   const ExprRef& k_col)
-{
-  // implement the out_of_bound member function
-  // virtual bool out_of_bound(unsigned input_row, unsigned input_col, unsigned k_row, unsigned k_col) {
-	// 	signed out_row = input_row + ((last_kern_row/2) - k_row);
-	// 	signed out_col = input_col + ((last_kern_col/2) - k_col);
-	// 	bool   idx_out_of_bound = false;
-	// 	if((out_row >= last_row) || (out_col >= last_col) || (out_row < 0) || (out_col < 0) ) {
-	// 		idx_out_of_bound = true;
-	// 	}
-	// 	return idx_out_of_bound;
-	// }
-  auto last_kernel_row = child.state(CONV_KERNEL_ROW_NUM);
-  auto last_kernel_col = child.state(CONV_KERNEL_COL_NUM);
-  auto last_row = child.state(CONV_INPUT_ROW_NUM);
-  auto last_col = child.state(CONV_INPUT_COL_NUM);
+                                                   const ExprRef& k_col);
 
-  // input_row and input_col have the largest bit-width
-  auto ext_bitwidth = input_row.bit_width();
-  // input_row and input_col should have the same bitwidth.
-  ILA_ASSERT(input_row.bit_width() == input_col.bit_width());
-
-  auto last_kernel_row_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_row.bit_width()),
-                                    last_kernel_row);
-  auto last_kernel_col_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_col.bit_width()),
-                                    last_kernel_col);
-  auto last_row_ext = Concat(BvConst(0, ext_bitwidth-last_row.bit_width()), last_row);
-  auto last_col_ext = Concat(BvConst(0, ext_bitwidth-last_col.bit_width()), last_col);
-  auto k_row_ext = Concat(BvConst(0, ext_bitwidth-k_row.bit_width()), k_row);
-  auto k_col_ext = Concat(BvConst(0, ext_bitwidth-k_col.bit_width()), k_col);
-
-  auto cond_0 = 
-        ((input_row + last_kernel_row_ext / BvConst(2,ext_bitwidth) - k_row_ext) >= last_row_ext);
-  auto cond_1 = 
-        ((input_col + last_kernel_col_ext / BvConst(2,ext_bitwidth) - k_col_ext) >= last_col_ext);
-  auto cond_2 = 
-        ((input_row + last_kernel_row_ext / BvConst(2,ext_bitwidth)) < k_row_ext);
-  auto cond_3 = 
-        ((input_col + last_kernel_col_ext / BvConst(2,ext_bitwidth)) < k_col_ext);
-  
-  auto is_out_of_bound = cond_0 | cond_1 | cond_2 | cond_3;
-
-  return is_out_of_bound;
-}
-
-inline ExprRef WtGetAddr(const Ila& child, const ExprRef& filter_id,
+ExprRef WtGetAddr(const Ila& child, const ExprRef& filter_id,
                                                const ExprRef& k_row,
                                                const ExprRef& k_col,
-                                               const ExprRef& chan_block)
-{
-  // channel_block_address = base_addr + 
-  // ((filter_idx*kernel_rows*kernel_cols*last_channel_block*CHANNEL_BLOCK_SIZE) + 
-  // (channel_block_idx*kernel_rows*kernel_cols*CHANNEL_BLOCK_SIZE) + 
-  // k_row*(kernel_cols*CHANNEL_BLOCK_SIZE) + k_col*CHANNEL_BLOCK_SIZE) * 
-  // (WEIGHT_TOT_WIDTH/8)/(NIC_MEM_ELEM_WIDTH);
-  auto base_addr = child.state(CONV_WEIGHT_BASE);
-  auto kernel_rows = child.state(CONV_KERNEL_ROW_NUM);
-  auto kernel_cols = child.state(CONV_KERNEL_COL_NUM);
-  auto input_channels = child.state(CONV_INPUT_CHAN_NUM);
-  auto chan_block_size = BvConst(CHANNEL_BLOCK_SIZE, input_channels.bit_width());
-  auto last_chan_block = 
-    Ite(URem(input_channels, chan_block_size) == 0,
-        input_channels / chan_block_size, input_channels / chan_block_size + 1);
+                                               const ExprRef& chan_block);
 
-  auto filter_id_ext = Concat(BvConst(0, 32-filter_id.bit_width()), filter_id);
-  auto k_row_ext = Concat(BvConst(0, 32-k_row.bit_width()), k_row);
-  auto k_col_ext = Concat(BvConst(0, 32-k_col.bit_width()), k_col);
-  auto chan_block_ext = Concat(BvConst(0, 32-chan_block.bit_width()), chan_block);
+ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
+                                        const ExprRef& input_col,
+                                        const ExprRef& k_row,
+                                        const ExprRef& k_col,
+                                        const ExprRef& filter_idx);
 
-  auto kernel_rows_ext = Concat(BvConst(0, 32-kernel_rows.bit_width()), kernel_rows);
-  auto kernel_cols_ext = Concat(BvConst(0, 32-kernel_cols.bit_width()), kernel_cols);
-
-  auto last_chan_block_ext = Concat(BvConst(0, 32-last_chan_block.bit_width()), last_chan_block);
-
-  auto addr = 
-    base_addr + (
-    (filter_id_ext * kernel_rows_ext * kernel_cols_ext * last_chan_block_ext * CHANNEL_BLOCK_SIZE) +
-    (chan_block_ext * kernel_rows_ext * kernel_cols_ext * CHANNEL_BLOCK_SIZE) +
-    k_row_ext * (kernel_cols_ext * CHANNEL_BLOCK_SIZE) +
-    k_col_ext * CHANNEL_BLOCK_SIZE
-    ) * (WEIGHT_TOTAL_BITWIDTH/8) / BvConst(NIC_MEM_ELEM_BYTEWIDTH, 32);
-  
-  return addr;
-}
+ExprRef WtIsLastPsum(const Ila& child, const ExprRef& act_row,
+                                       const ExprRef& act_col,
+                                       const ExprRef& k_row,
+                                       const ExprRef& k_col,
+                                       const ExprRef& chan_block);
 
 ExprRef GetCfgRegAlignedData();
 
