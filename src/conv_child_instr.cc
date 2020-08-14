@@ -242,6 +242,8 @@ void DefineConvActFetch(Ila& child) {
     auto act_addr = act_gen_get_addr(child, input_row, input_col, chan_block);
 
     // push the act fetching request to the master AXI interface
+    instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_VALID_FLAG),
+          BvConst(ACCEL_CONV_CHILD_VALID, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH));
     instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
     instr.SetUpdate(child.state(TOP_MASTER_IF_RD), 
                     BvConst(ACCEL_CONV_CHILD_VALID, TOP_MASTER_IF_RD_BITWIDTH));
@@ -271,6 +273,8 @@ void DefineConvActFetch(Ila& child) {
     }
 
     // set axi master rd command off
+    instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_VALID_FLAG),
+          BvConst(ACCEL_CONV_CHILD_INVALID, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH));
     instr.SetUpdate(child.state(TOP_MASTER_IF_RD),
                     BvConst(ACCEL_CONV_CHILD_INVALID, TOP_MASTER_IF_RD_BITWIDTH));
     instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_STATE),

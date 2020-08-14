@@ -44,6 +44,9 @@ void DefineAXIMasterChild(Ila& m) {
   child.AddInit(rd_resp_valid_flag == ACCEL_MASTER_AXI_CHILD_INVALID);
   child.AddInit(state == MASTER_AXI_CHILD_STATE_IDLE);
 
+  // This file contains only the AXI instructions for spad write
+  // This activation fetching instructions are integrated into the conv child
+
   { // instr 0 ---- AXI master read req for weights or activations to MEM ()
     auto instr = child.NewInstr("accel_axi_master_rd_req_spad");
     auto is_instr_valid = ((rd_resp_valid_flag == ACCEL_MASTER_AXI_CHILD_INVALID) &
