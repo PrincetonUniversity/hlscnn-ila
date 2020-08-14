@@ -8,6 +8,7 @@
 using namespace ilang;
 
 int main() {
+  SetToStdErr(1);
   // get the ILA model
   auto hlscnn = hlscnn::GetHlscnnIla("hlscnn");
 
@@ -26,6 +27,8 @@ int main() {
       ILA_INFO << "child instr." << j << " " << hlscnn.child(i).instr(j);
     }
   }
+
+  ExportSysCSim(hlscnn, "./sim_model", false);
 
   // // example - export ILA to Verilog
   // ILA_INFO << "Export " << hlscnn << " to hlscnn.v";
