@@ -38,6 +38,7 @@ add_executable(${MyTarget}
   src/utils.cc
   src/conv_child_instr.cc
   src/conv_trigger_instr.cc
+  src/vir_mem_instr.cc
 
 )
 

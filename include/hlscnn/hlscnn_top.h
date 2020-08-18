@@ -56,6 +56,8 @@ void DefineReduceParam(Ila& m);
 void DefineArchState(Ila& m);
 void DefineInternalState(Ila& m);
 
+void DefineVirMemInstr(Ila& m);
+
 void DefineConfigInstr(Ila& m);
 void DefineSPADInstr(Ila& m);
 void DefineAccelConvTrigger(Ila& m);

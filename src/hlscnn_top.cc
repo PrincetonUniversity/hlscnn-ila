@@ -50,6 +50,8 @@ Ila GetHlscnnIla(const std::string& model_name) {
   DefineArchState(m);
   DefineInternalState(m);
 
+  DefineVirMemInstr(m);
+
   // Define Instructions
   DefineConfigInstr(m);
   DefineSPADInstr(m);

@@ -145,6 +145,9 @@ namespace hlscnn {
   #define VIRTUAL_SOC_MEMORY "virtual_soc_memory"
   #define VIRTUAL_SOC_MEMORY_DATA_BITWIDTH 8
   #define VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM 0x30000
+  #define VIRTUAL_SOC_MEMORY_ADDR_MIN 0x50000
+  #define VIRTUAL_SOC_MEMORY_ADDR_MAX                                                  \
+    (VIRTUAL_SOC_MEMORY_ADDR_MIN + VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM)
    
 } // namespace hlscnn
 } // namespace ilang
