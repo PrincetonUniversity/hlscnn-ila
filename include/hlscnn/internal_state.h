@@ -77,6 +77,9 @@ namespace hlscnn {
 #define CONV_CHILD_STATE_ACT_INPUT_COL 4
 #define CONV_CHILD_STATE_ACT_SEND_RD_REQ 5
 #define CONV_CHILD_STATE_ACT_RECV_RD_RESP 6
+// 08172020: add new instr to support abstraction of axi master interface
+#define CONV_CHILD_STATE_ACT_SET_REQ_LEN 16
+#define CONV_CHILD_STATE_ACT_FETCH_ACT 17
 // FSM state related to weight fetching
 #define CONV_CHILD_STATE_WEIGHT_INIT 7
 #define CONV_CHILD_STATE_WEIGHT_ROW_FETCH 8
@@ -165,6 +168,13 @@ namespace hlscnn {
 
 #define CONV_CHILD_ACTIVATION_PSUM "conv_child_activation_psum"
 #define CONV_CHILD_ACTIVATION_PSUM_BITWIDTH ACT_TOTAL_BITWIDTH
+
+// 08172020 model the multiple activation fetching behaviors
+#define CONV_CHILD_ACT_REQ_LENGTH "conv_child_act_req_length"
+#define CONV_CHILD_ACT_REQ_LENGTH_BITWIDTH CONV_CHILD_INPUT_COL_ID_BITWIDTH
+
+#define CONV_CHILD_ACT_FETCH_CNTR "conv_child_act_fetch_cntr"
+#define CONV_CHILD_ACT_FETCH_CNTR_BITWIDTH 4
 
 
 

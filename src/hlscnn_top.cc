@@ -56,7 +56,7 @@ Ila GetHlscnnIla(const std::string& model_name) {
   DefineAccelConvTrigger(m);
 
   // Define child instructions
-  DefineAXIMasterChild(m);
+  // DefineAXIMasterChild(m);
   DefineAccelConvChild(m);
 
   ILA_INFO << "spad0 base addr: " << std::hex << SPAD0_BASE_ADDR;

@@ -114,7 +114,8 @@ namespace hlscnn {
 #define CONV_CHAN_BIAS "conv_chan_bias"
 #define CONV_CHAN_BIAS_BITWIDTH WEIGHT_TOTAL_BITWIDTH
 
-
+// 08142020: model multiple activation fetch request in activation fetching
+#define CONV_BURST_LENGTH 8
 
 
 } // namespace hlscnn

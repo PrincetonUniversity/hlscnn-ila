@@ -86,6 +86,7 @@ ExprRef GetCfgRegAlignedData();
 
 void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name);
 
+
 }
 
 }

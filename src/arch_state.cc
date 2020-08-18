@@ -33,10 +33,16 @@ namespace hlscnn {
 void DefineArchState(Ila& m) {
   // scratchpad0 and scratchpad1 are declared as memstate here
   m.NewMemState(SCRATCH_PAD_0, TOP_SLAVE_ADDR_IN_BITWIDTH, SCRATCH_PAD_DATA_BITWIDTH);
-  m.state(SCRATCH_PAD_0).SetEntryNum(SPAD_CAPACITY);
+  m.state(SCRATCH_PAD_0).SetEntryNum(SPAD_BYTE_ENTRY_NUM);
 
   m.NewMemState(SCRATCH_PAD_1, TOP_SLAVE_ADDR_IN_BITWIDTH, SCRATCH_PAD_DATA_BITWIDTH);
-  m.state(SCRATCH_PAD_1).SetEntryNum(SPAD_CAPACITY);
+  m.state(SCRATCH_PAD_1).SetEntryNum(SPAD_BYTE_ENTRY_NUM);
+
+  // ---------------------------------------------------------------------------------
+  // Declare a virtual memeory state for external memory
+  // ---------------------------------------------------------------------------------
+  m.NewMemState(VIRTUAL_SOC_MEMORY, TOP_SLAVE_ADDR_IN_BITWIDTH, VIRTUAL_SOC_MEMORY_DATA_BITWIDTH);
+  m.state(VIRTUAL_SOC_MEMORY).SetEntryNum(VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM);
 }
 
 

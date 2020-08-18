@@ -123,9 +123,11 @@ namespace hlscnn {
   #define SCRATCH_PAD_DATA_BITWIDTH 8
 
   // scratch pad parameters
+  // each memory bank should be 16-byte wide
   #define SPAD_NUM_BANK 4
   #define SPAD_DATA_BYTE_WIDTH 16
   #define SPAD_CAPACITY (SPAD_NUM_BANK * 2048)
+  #define SPAD_BYTE_ENTRY_NUM (SPAD_CAPACITY * SPAD_DATA_BYTE_WIDTH)
 
   // base addr for configurations
   #define CONFIG_BASE_ADDR 0X0
@@ -135,6 +137,14 @@ namespace hlscnn {
   #define SPAD1_BASE_ADDR (SPAD0_BASE_ADDR + SPAD_DATA_BYTE_WIDTH * SPAD_CAPACITY)
   // upper bound for valid address
   #define MEM_ADDR_MAX (SPAD1_BASE_ADDR + SPAD_DATA_BYTE_WIDTH * SPAD_CAPACITY)
+
+  //----------------------------------------------------------------
+  // This part is for abstracting the AXI master interface 
+  // using an internal memory state to represent the SOC memory
+  // ---------------------------------------------------------------
+  #define VIRTUAL_SOC_MEMORY "virtual_soc_memory"
+  #define VIRTUAL_SOC_MEMORY_DATA_BITWIDTH 8
+  #define VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM 0x30000
    
 } // namespace hlscnn
 } // namespace ilang

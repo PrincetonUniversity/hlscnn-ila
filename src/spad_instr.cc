@@ -38,10 +38,8 @@ void DefineSPADInstr(Ila& m) {
   // offset from the CPU.""
   auto masked_addr = Concat(BvConst(0, 8), 
                             Extract(m.input(TOP_SLAVE_ADDR_IN), 23, 0));
-  
-  auto spad_addr = m.state(ACCEL_SPAD_WR_ADDR);
-  auto axi_valid_flag = m.state(ACCEL_MASTER_AXI_CHILD_VALID_FLAG);
-  auto axi_state = m.state(ACCEL_MASTER_AXI_CHILD_STATE);
+  auto soc_mem_addr = m.state(CFG_REG_SOC_MEM_BASE_ADDR);
+  auto axi_addr_out = m.state(TOP_MASTER_RD_ADDR_OUT);
 
 
   {// write data into SPAD0
@@ -50,16 +48,35 @@ void DefineSPADInstr(Ila& m) {
     
     instr.SetDecode(is_write & is_spad0_addr);
 
-    // auto soc_mem_base_addr = m.state(CFG_REG_SOC_MEM_BASE_ADDR);
-    // auto soc_mem_wr_length = m.state(CFG_REG_SOC_MEM_RD_WR_LENGTH);
-    
-    auto spad_addr_next = masked_addr - SPAD0_BASE_ADDR;
-    
-    instr.SetUpdate(spad_addr, spad_addr_next);
-    instr.SetUpdate(axi_valid_flag, 
-      BvConst(ACCEL_MASTER_AXI_CHILD_VALID, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH));
-    instr.SetUpdate(axi_state,
-      BvConst(MASTER_AXI_CHILD_STATE_SPAD0_RD, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
+    // this part model the AXI master interface addr port
+    auto soc_mem_addr = m.state(CFG_REG_SOC_MEM_BASE_ADDR);
+    instr.SetUpdate(axi_addr_out, soc_mem_addr);
+
+    // this part takes the data from the virtual memory for simulation
+    auto spad = m.state(SCRATCH_PAD_0);
+    auto spad_addr = masked_addr - SPAD0_BASE_ADDR;
+    auto vir_mem = m.state(VIRTUAL_SOC_MEMORY);
+
+    auto spad_next = spad;
+
+    spad_next = Store(spad_next, spad_addr + 0, Load(vir_mem, soc_mem_addr + 0));
+    spad_next = Store(spad_next, spad_addr + 1, Load(vir_mem, soc_mem_addr + 1));
+    spad_next = Store(spad_next, spad_addr + 2, Load(vir_mem, soc_mem_addr + 2));
+    spad_next = Store(spad_next, spad_addr + 3, Load(vir_mem, soc_mem_addr + 3));
+    spad_next = Store(spad_next, spad_addr + 4, Load(vir_mem, soc_mem_addr + 4));
+    spad_next = Store(spad_next, spad_addr + 5, Load(vir_mem, soc_mem_addr + 5));
+    spad_next = Store(spad_next, spad_addr + 6, Load(vir_mem, soc_mem_addr + 6));
+    spad_next = Store(spad_next, spad_addr + 7, Load(vir_mem, soc_mem_addr + 7));
+    spad_next = Store(spad_next, spad_addr + 8, Load(vir_mem, soc_mem_addr + 8));
+    spad_next = Store(spad_next, spad_addr + 9, Load(vir_mem, soc_mem_addr + 9));
+    spad_next = Store(spad_next, spad_addr + 10, Load(vir_mem, soc_mem_addr + 10));
+    spad_next = Store(spad_next, spad_addr + 11, Load(vir_mem, soc_mem_addr + 11));
+    spad_next = Store(spad_next, spad_addr + 12, Load(vir_mem, soc_mem_addr + 12));
+    spad_next = Store(spad_next, spad_addr + 13, Load(vir_mem, soc_mem_addr + 13));
+    spad_next = Store(spad_next, spad_addr + 14, Load(vir_mem, soc_mem_addr + 14));
+    spad_next = Store(spad_next, spad_addr + 15, Load(vir_mem, soc_mem_addr + 15));
+
+    instr.SetUpdate(spad, spad_next);
   }
 
   {// write data into SPAD1
@@ -68,15 +85,35 @@ void DefineSPADInstr(Ila& m) {
     
     instr.SetDecode(is_write & is_spad1_addr);
 
-    // auto soc_mem_base_addr = m.state(CFG_REG_SOC_MEM_BASE_ADDR);
-    // auto soc_mem_wr_length = m.state(CFG_REG_SOC_MEM_RD_WR_LENGTH);
-    auto spad_addr_next = masked_addr - SPAD1_BASE_ADDR;
+    // this part model the AXI master interface addr port
+    auto soc_mem_addr = m.state(CFG_REG_SOC_MEM_BASE_ADDR);
+    instr.SetUpdate(axi_addr_out, soc_mem_addr);
 
-    instr.SetUpdate(spad_addr, spad_addr_next);
-    instr.SetUpdate(axi_valid_flag, 
-      BvConst(ACCEL_MASTER_AXI_CHILD_VALID, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH));
-    instr.SetUpdate(axi_state,
-      BvConst(MASTER_AXI_CHILD_STATE_SPAD1_RD, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
+    // this part takes the data from the virtual memory for simulation
+    auto spad = m.state(SCRATCH_PAD_1);
+    auto spad_addr = masked_addr - SPAD0_BASE_ADDR;
+    auto vir_mem = m.state(VIRTUAL_SOC_MEMORY);
+
+    auto spad_next = spad;
+
+    spad_next = Store(spad_next, spad_addr + 0, Load(vir_mem, soc_mem_addr + 0));
+    spad_next = Store(spad_next, spad_addr + 1, Load(vir_mem, soc_mem_addr + 1));
+    spad_next = Store(spad_next, spad_addr + 2, Load(vir_mem, soc_mem_addr + 2));
+    spad_next = Store(spad_next, spad_addr + 3, Load(vir_mem, soc_mem_addr + 3));
+    spad_next = Store(spad_next, spad_addr + 4, Load(vir_mem, soc_mem_addr + 4));
+    spad_next = Store(spad_next, spad_addr + 5, Load(vir_mem, soc_mem_addr + 5));
+    spad_next = Store(spad_next, spad_addr + 6, Load(vir_mem, soc_mem_addr + 6));
+    spad_next = Store(spad_next, spad_addr + 7, Load(vir_mem, soc_mem_addr + 7));
+    spad_next = Store(spad_next, spad_addr + 8, Load(vir_mem, soc_mem_addr + 8));
+    spad_next = Store(spad_next, spad_addr + 9, Load(vir_mem, soc_mem_addr + 9));
+    spad_next = Store(spad_next, spad_addr + 10, Load(vir_mem, soc_mem_addr + 10));
+    spad_next = Store(spad_next, spad_addr + 11, Load(vir_mem, soc_mem_addr + 11));
+    spad_next = Store(spad_next, spad_addr + 12, Load(vir_mem, soc_mem_addr + 12));
+    spad_next = Store(spad_next, spad_addr + 13, Load(vir_mem, soc_mem_addr + 13));
+    spad_next = Store(spad_next, spad_addr + 14, Load(vir_mem, soc_mem_addr + 14));
+    spad_next = Store(spad_next, spad_addr + 15, Load(vir_mem, soc_mem_addr + 15));
+
+    instr.SetUpdate(spad, spad_next);
   }
 
 }

@@ -35,7 +35,6 @@ add_executable(${MyTarget}
   src/arch_state.cc
   src/internal_state.cc
   src/spad_instr.cc
-  src/axi_master_child_instr.cc
   src/utils.cc
   src/conv_child_instr.cc
   src/conv_trigger_instr.cc
