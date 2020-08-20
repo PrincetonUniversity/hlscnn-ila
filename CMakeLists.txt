@@ -39,6 +39,7 @@ add_executable(${MyTarget}
   src/conv_child_instr.cc
   src/conv_trigger_instr.cc
   src/vir_mem_instr.cc
+  src/init_condition.cc
 
 )
 

@@ -53,7 +53,7 @@ void DefineAccelConvTrigger(Ila& m) {
   // auto aligned_data = GetCfgRegAlignedData(m);
 
   auto reg_id = URem(masked_addr >> CFG_REG_SIZE_BITWIDTH,
-                     BvConst(0, masked_addr.bit_width()));
+                     BvConst(NumCfgRegisters, masked_addr.bit_width()));
 
   { // instr: AccelConvTrigger
     auto instr = m.NewInstr("ACCEL_CONV_TRIGGER");
@@ -96,6 +96,8 @@ void DefineAccelConvTrigger(Ila& m) {
     auto child_valid_flag = m.state(ACCEL_CONV_CHILD_VALID_FLAG);
     instr.SetUpdate(child_valid_flag, 
                     BvConst(ACCEL_CONV_CHILD_VALID, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(ACCEL_CONV_CHILD_STATE),
+                    BvConst(CONV_CHILD_STATE_IDLE, ACCEL_CONV_CHILD_STATE_BITWIDTH));
     
     // the declaration of child is moved to top.
     // DefineAccelConvChild(m);

@@ -42,8 +42,6 @@ void DefineAccelConvChild(Ila& m) {
   child.SetValid(child_valid_flag == ACCEL_CONV_CHILD_VALID);
 
   // Declare child states
-  auto state = child.NewBvState(ACCEL_CONV_CHILD_STATE, ACCEL_CONV_CHILD_STATE_BITWIDTH);
-
   child.NewBvState(CONV_CHILD_FILTER_ID, CONV_CHILD_FILTER_ID_BITWIDTH);
   child.NewBvState(CONV_CHILD_CHAN_BLOCK_ID, CONV_CHILD_CHAN_BLOCK_ID_BITWIDTH);
   child.NewBvState(CONV_CHILD_INPUT_ROW_ID, CONV_CHILD_INPUT_ROW_ID_BITWIDTH);
@@ -74,8 +72,6 @@ void DefineAccelConvChild(Ila& m) {
     child.NewBvState(out_v_name, CONV_CHILD_OUT_ARRAY_BITWIDTH);
   }
   
-  child.AddInit(state == CONV_CHILD_STATE_IDLE);
-
   // Declare child instructions, seperating activation fetching, weigth fetching 
   // and datapath
   DefineConvActFetch(child);

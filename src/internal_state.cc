@@ -43,7 +43,7 @@ void DefineInternalState(Ila& m) {
   // conv internal state
   ///////////////////////////////////
   m.NewBvState(ACCEL_CONV_CHILD_VALID_FLAG, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH);
-
+  m.NewBvState(ACCEL_CONV_CHILD_STATE, ACCEL_CONV_CHILD_STATE_BITWIDTH);
 
 }
 

@@ -54,7 +54,7 @@ void DefineConfigInstr(Ila& m) {
   // auto aligned_data = GetCfgRegAlignedData(m);
 
   auto reg_id = URem(masked_addr >> CFG_REG_SIZE_BITWIDTH,
-                     BvConst(0, masked_addr.bit_width()));
+                     BvConst(NumCfgRegisters, masked_addr.bit_width()));
   
   // there are 3 special config reg, FC AccelStartFlag, AccelConvTrigger, AccelReduceTrigger
   

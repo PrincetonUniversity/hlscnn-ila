@@ -94,7 +94,7 @@ void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name
   auto aligned_data = GetCfgRegAlignedData(m);
 
   auto reg_id = URem(masked_addr >> CFG_REG_SIZE_BITWIDTH,
-                     BvConst(0, masked_addr.bit_width()));
+                     BvConst(NumCfgRegisters, masked_addr.bit_width()));
   
   std::string instr_name = "CFG_WR_" + reg_name;
   
