@@ -12,8 +12,6 @@ int main() {
   // get the ILA model
   auto hlscnn = hlscnn::GetHlscnnIla("hlscnn");
 
-  ILA_INFO << "spad_capacity: " << std::hex << SPAD_CAPACITY;
-
   ILA_INFO << "#child: " << hlscnn.child_num();
   ILA_INFO << "#instr: " << hlscnn.instr_num();
   ILA_INFO << "#input: " << hlscnn.input_num();

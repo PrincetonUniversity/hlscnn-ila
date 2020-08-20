@@ -35,18 +35,6 @@ void DefineConvActFetch(Ila& child);
 void DefineConvWeightFetch(Ila& child);
 void DefineConvDatapath(Ila& child);
 
-auto mul_in = SortRef::BV(WEIGHT_TOTAL_BITWIDTH);
-auto mul_out = SortRef::BV(PSUM_TOTAL_BITWIDTH);
-FuncRef ConvMacPsumMul("ConvMacPsumMul", mul_out, mul_in, mul_in);
-
-auto psum_type = SortRef::BV(PSUM_TOTAL_BITWIDTH);
-auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
-FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
-
-auto act_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
-FuncRef ActAdd("ActAdd", act_type, act_type, act_type);
-FuncRef ActRelu("ActRelu", act_type, act_type);
-
 void DefineAccelConvChild(Ila& m) {
   auto child = m.NewChild("Accel_Conv_Child");
   auto child_valid_flag = m.state(ACCEL_CONV_CHILD_VALID_FLAG);

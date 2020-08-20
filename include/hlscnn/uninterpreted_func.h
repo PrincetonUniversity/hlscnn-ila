@@ -22,52 +22,29 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: hlscnn_top.h
+// File: uninterpreted_func.h
 
-#ifndef HLSCNN_TOP_H__
-#define HLSCNN_TOP_H__
+#ifndef UNINTERPRETED_FUNC_H__
+#define UNINTERPRETED_FUNC_H__
 
 #include <ilang/ilang++.h>
-#include <string>
-#include <ilang/util/log.h>
-
-#include <hlscnn/top_config.h>
-#include <hlscnn/common_config.h>
-#include <hlscnn/config_reg.h>
-#include <hlscnn/conv_param.h>
-#include <hlscnn/fc_param.h>
-#include <hlscnn/reduction_param.h>
-#include <hlscnn/internal_state.h>
-#include <hlscnn/utils.h>
-#include <hlscnn/uninterpreted_func.h>
 
 namespace ilang {
-
 namespace hlscnn {
 
-Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
+static auto mul_in = SortRef::BV(WEIGHT_TOTAL_BITWIDTH);
+static auto mul_out = SortRef::BV(PSUM_TOTAL_BITWIDTH);
+static FuncRef ConvMacPsumMul("ConvMacPsumMul", mul_out, mul_in, mul_in);
 
-void DefineTopIO(Ila& m);
+static auto psum_type = SortRef::BV(PSUM_TOTAL_BITWIDTH);
+static auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
+static FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
 
-void DefineConfigReg(Ila& m);
-void DefineFCParam(Ila& m);
-void DefineConvParam(Ila& m);
-void DefineReduceParam(Ila& m);
+static auto act_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
+static FuncRef ActAdd("ActAdd", act_type, act_type, act_type);
+static FuncRef ActRelu("ActRelu", act_type, act_type);
 
-void DefineArchState(Ila& m);
-void DefineInternalState(Ila& m);
+} // namespace ilang
+} // namespace hlscnn
 
-void DefineVirMemInstr(Ila& m);
-
-void DefineConfigInstr(Ila& m);
-void DefineSPADInstr(Ila& m);
-void DefineAccelConvTrigger(Ila& m);
-
-// child instructions
-void DefineAXIMasterChild(Ila& m);
-void DefineAccelConvChild(Ila& m);
-
-}
-};
-
-#endif // HLSCNN_TOP_H__
+#endif
