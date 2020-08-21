@@ -27,6 +27,8 @@
 #ifndef TOP_CONFIG_H__
 #define TOP_CONFIG_H__
 
+#include <hlscnn/config_reg.h>
+
 namespace ilang {
 namespace hlscnn {
 
@@ -137,6 +139,9 @@ namespace hlscnn {
   #define SPAD1_BASE_ADDR (SPAD0_BASE_ADDR + SPAD_DATA_BYTE_WIDTH * SPAD_CAPACITY)
   // upper bound for valid address
   #define MEM_ADDR_MAX (SPAD1_BASE_ADDR + SPAD_DATA_BYTE_WIDTH * SPAD_CAPACITY)
+
+  #define SLAVE_BASE_FROM_HOST 0x32000000
+  #define ADDR_IN_MAX (SLAVE_BASE_FROM_HOST + NumCfgRegisters * CFG_REG_BYTEWIDTH)
 
   //----------------------------------------------------------------
   // This part is for abstracting the AXI master interface 

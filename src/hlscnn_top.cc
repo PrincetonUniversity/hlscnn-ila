@@ -53,6 +53,12 @@ Ila GetHlscnnIla(const std::string& model_name) {
   // Define Init Conditions
   DefineInitCond(m);
 
+  // Define valid condition
+  auto valid_req = (m.input(TOP_SLAVE_IF_RD) ^ m.input(TOP_SLAVE_IF_WR));
+  auto valid_addr = (m.input(TOP_SLAVE_ADDR_IN) <= ADDR_IN_MAX);
+  m.SetValid(valid_req & valid_addr);
+
+
   // Define Instructions
   DefineConfigInstr(m);
   DefineSPADInstr(m);

@@ -82,6 +82,8 @@ void DefineAccelConvChild(Ila& m) {
 void DefineConvActFetch(Ila& child) {
   
   auto state = child.state(ACCEL_CONV_CHILD_STATE);
+  auto is_child_valid = 
+    (child.state(ACCEL_CONV_CHILD_VALID_FLAG) == ACCEL_CONV_CHILD_VALID);
 
   // child states
   auto filter_idx = child.state(CONV_CHILD_FILTER_ID);
@@ -93,7 +95,7 @@ void DefineConvActFetch(Ila& child) {
     // initilizting the loop parameter, setting them to zero, thus the next state should
     // jump to weight fetching
     auto instr = child.NewInstr("accel_conv_child_start");
-    instr.SetDecode(state == CONV_CHILD_STATE_IDLE);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_IDLE));
 
     instr.SetUpdate(filter_idx, BvConst(0, CONV_CHILD_FILTER_ID_BITWIDTH));
     instr.SetUpdate(chan_block, BvConst(0, CONV_CHILD_CHAN_BLOCK_ID_BITWIDTH));
@@ -114,7 +116,7 @@ void DefineConvActFetch(Ila& child) {
 
   { // instr ---- conv done 
     auto instr = child.NewInstr("accel_conv_done");
-    instr.SetDecode(state == CONV_CHILD_STATE_DONE);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_DONE));
 
     instr.SetUpdate(state, 
       BvConst(CONV_CHILD_STATE_IDLE, ACCEL_CONV_CHILD_STATE_BITWIDTH));
@@ -125,7 +127,7 @@ void DefineConvActFetch(Ila& child) {
   { // instr ---- setting filter_idx
     // incrementing filter_idx, or conv done
     auto instr = child.NewInstr("accel_conv_child_act_filter_idx");
-    instr.SetDecode(state == CONV_CHILD_STATE_ACT_FILTER_ID);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_FILTER_ID));
 
     auto num_filters = child.state(CONV_OFILTER_IDX);
     auto num_filters_ext = Concat(BvConst(0, filter_idx.bit_width() - num_filters.bit_width()),
@@ -144,7 +146,8 @@ void DefineConvActFetch(Ila& child) {
 
   { // instr ---- incrementing input channel block id
     auto instr = child.NewInstr("accel_conv_child_act_input_chan_block_id");
-    instr.SetDecode(state == CONV_CHILD_STATE_ACT_INPUT_CHANNEL_BLOCK);
+    instr.SetDecode(is_child_valid &
+                    (state == CONV_CHILD_STATE_ACT_INPUT_CHANNEL_BLOCK));
 
     // last_channel_block = frac_ceil(input_channels, channel_block_size);
     auto input_channels = child.state(CONV_INPUT_CHAN_NUM);
@@ -169,7 +172,7 @@ void DefineConvActFetch(Ila& child) {
 
   { // instr ---- incrementing input row id
     auto instr = child.NewInstr("accel_conv_child_act_input_row_id");
-    instr.SetDecode(state == CONV_CHILD_STATE_ACT_INPUT_ROW);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_INPUT_ROW));
 
     auto last_row = child.state(CONV_INPUT_ROW_NUM);
     auto row_stride = 1;
@@ -190,7 +193,7 @@ void DefineConvActFetch(Ila& child) {
 
   { // instr ---- incrementing input col
     auto instr = child.NewInstr("accel_conv_child_act_input_col_id");
-    instr.SetDecode(state == CONV_CHILD_STATE_ACT_INPUT_COL);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_INPUT_COL));
 
     auto last_col = child.state(CONV_INPUT_COL_NUM);
     auto last_col_ext = Concat(BvConst(0, input_col.bit_width() - last_col.bit_width()),
@@ -211,7 +214,7 @@ void DefineConvActFetch(Ila& child) {
 
   { // instr ---- setting act request length
     auto instr = child.NewInstr("accel_conv_child_act_set_req_length");
-    instr.SetDecode(state == CONV_CHILD_STATE_ACT_SET_REQ_LEN);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_SET_REQ_LEN));
 
     auto last_col = child.state(CONV_INPUT_COL_NUM);
     auto last_col_ext = Concat(BvConst(0, 1), last_col);
@@ -237,7 +240,7 @@ void DefineConvActFetch(Ila& child) {
   { // instr ---- fetching activations from external memory
     // Use an internal memory to simulate the external memory
     auto instr = child.NewInstr("accel_conv_child_act_fetch_activations");
-    instr.SetDecode(state == CONV_CHILD_STATE_ACT_FETCH_ACT);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_FETCH_ACT));
 
     // fetch the activation from internal memory
     //channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
@@ -320,6 +323,8 @@ void DefineConvActFetch(Ila& child) {
 void DefineConvWeightFetch(Ila& child) {
   
   auto state = child.state(ACCEL_CONV_CHILD_STATE);
+  auto is_child_valid = 
+        (child.state(ACCEL_CONV_CHILD_VALID_FLAG) == ACCEL_CONV_CHILD_VALID);
 
   auto kern_row = child.state(CONV_CHILD_KERNEL_ROW_ID);
   auto kern_col = child.state(CONV_CHILD_KERNEL_COL_ID);
@@ -341,7 +346,7 @@ void DefineConvWeightFetch(Ila& child) {
     // this part setting the kern_row and kern_col to zero, thus the next state should jump to
     // check out-of-bound, no need to increment the loop param for this one
     auto instr = child.NewInstr("accel_conv_child_weight_init");
-    instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_INIT);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_WEIGHT_INIT));
 
     instr.SetUpdate(kern_row, kern_row_init);
     instr.SetUpdate(kern_col, kern_col_init);
@@ -354,7 +359,7 @@ void DefineConvWeightFetch(Ila& child) {
 
   { // instr ---- incrementing kern_row
     auto instr = child.NewInstr("accel_conv_child_weight_row_id");
-    instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_ROW_FETCH);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_WEIGHT_ROW_FETCH));
 
     auto last_kern_row = child.state(CONV_KERNEL_ROW_NUM);
     auto last_kern_row_ext = Concat(BvConst(0, kern_row.bit_width()-last_kern_row.bit_width()),
@@ -387,7 +392,7 @@ void DefineConvWeightFetch(Ila& child) {
 
   { // instr ---- incrementing kern_col
     auto instr = child.NewInstr("accel_conv_child_weight_col_id");
-    instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_COL_FETCH);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_WEIGHT_COL_FETCH));
 
     auto last_kern_col = child.state(CONV_KERNEL_COL_NUM);
     auto last_kern_col_ext = Concat(BvConst(0, 1), last_kern_col);
@@ -405,7 +410,7 @@ void DefineConvWeightFetch(Ila& child) {
 
   { // instr ---- check out-of-bound condition
     auto instr = child.NewInstr("accel_conv_check_out_of_bound");
-    instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_CHECK_BOUND);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_WEIGHT_CHECK_BOUND));
 
     auto is_out_of_bound = conv_out_of_bound(child, act_row, act_col, kern_row, kern_col);
 
@@ -419,7 +424,7 @@ void DefineConvWeightFetch(Ila& child) {
 
   { // instr ---- send weights and act to datapath
     auto instr = child.NewInstr("accel_conv_send_dp");
-    instr.SetDecode(state == CONV_CHILD_STATE_WEIGHT_SEND_DP);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_WEIGHT_SEND_DP));
 
     // TODO: this address should be vector level (128bit) address
     auto weight_req_addr = WtGetAddr(child, filter_idx, kern_row, kern_col, chan_block);
@@ -442,10 +447,12 @@ void DefineConvWeightFetch(Ila& child) {
 
 void DefineConvDatapath(Ila& child) {
   auto state = child.state(ACCEL_CONV_CHILD_STATE);
+  auto is_child_valid = 
+        (child.state(ACCEL_CONV_CHILD_VALID_FLAG) == ACCEL_CONV_CHILD_VALID);
 
   { // instr ---- calculate the mac_psum
     auto instr = child.NewInstr("conv_child_dp_mac_psum");
-    instr.SetDecode(state == CONV_CHILD_STATE_DP_MAC_PSUM);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_DP_MAC_PSUM));
 
     auto mac_psum = BvConst(0, PSUM_TOTAL_BITWIDTH);
 
@@ -465,7 +472,7 @@ void DefineConvDatapath(Ila& child) {
 
   { // instr ---- fetching previous activations from spad1
     auto instr = child.NewInstr("conv_child_fetch_act_spad1");
-    instr.SetDecode(state == CONV_CHILD_STATE_FETCH_OUT_ACT);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_FETCH_OUT_ACT));
 
     auto act_row = child.state(CONV_CHILD_INPUT_ROW_ID);
     auto act_col = child.state(CONV_CHILD_INPUT_COL_ID);
@@ -492,7 +499,7 @@ void DefineConvDatapath(Ila& child) {
   { // instr ---- add bias and relu
     // TODO: if this instr execute too slow, can divided them into 3 instructions
     auto instr = child.NewInstr("conv_child_dp_bias_relu");
-    instr.SetDecode(state == CONV_CHILD_STATE_BIAS_RELU);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_BIAS_RELU));
 
     auto psum_val = child.state(CONV_CHILD_ACTIVATION_PSUM);
 
@@ -538,7 +545,7 @@ void DefineConvDatapath(Ila& child) {
 
   { // instr ---- write result into spad1
     auto instr = child.NewInstr("conv_child_output");
-    instr.SetDecode(state == CONV_CHILD_STATE_OUT);
+    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_OUT));
 
     auto act_row = child.state(CONV_CHILD_INPUT_ROW_ID);
     auto act_col = child.state(CONV_CHILD_INPUT_COL_ID);
@@ -570,7 +577,6 @@ void DefineConvDatapath(Ila& child) {
   }
 
 }
-
 
 } // hlscnn
 } // ilang
