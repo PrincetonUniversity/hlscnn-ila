@@ -133,10 +133,10 @@ void DefineConvActFetch(Ila& child) {
     auto num_filters_ext = Concat(BvConst(0, filter_idx.bit_width() - num_filters.bit_width()),
                                   num_filters);
 
-    auto next_filter_id = Ite(filter_idx >= num_filters_ext,
+    auto next_filter_id = Ite(filter_idx >= num_filters_ext - 1,
                               BvConst(0, filter_idx.bit_width()), filter_idx + 1);
     auto next_state = 
-      Ite(filter_idx >= num_filters_ext,
+      Ite(filter_idx >= num_filters_ext - 1,
             BvConst(CONV_CHILD_STATE_DONE, ACCEL_CONV_CHILD_STATE_BITWIDTH),
             BvConst(CONV_CHILD_STATE_ACT_INPUT_CHANNEL_BLOCK, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
@@ -159,10 +159,10 @@ void DefineConvActFetch(Ila& child) {
     auto last_chan_blk_ext = Concat(BvConst(0, chan_block.bit_width()-last_chan_block.bit_width()),
                                     last_chan_block);
     
-    auto next_chan_block = Ite(chan_block >= last_chan_blk_ext,
+    auto next_chan_block = Ite(chan_block >= last_chan_blk_ext - 1,
                                BvConst(0, chan_block.bit_width()), chan_block + 1);
     auto next_state = 
-      Ite(chan_block >= last_chan_blk_ext,
+      Ite(chan_block >= last_chan_blk_ext - 1,
           BvConst(CONV_CHILD_STATE_ACT_FILTER_ID, ACCEL_CONV_CHILD_STATE_BITWIDTH),
           BvConst(CONV_CHILD_STATE_ACT_INPUT_ROW, ACCEL_CONV_CHILD_STATE_BITWIDTH));
   
@@ -180,10 +180,10 @@ void DefineConvActFetch(Ila& child) {
     auto last_row_ext = Concat(BvConst(0, input_row.bit_width() - last_row.bit_width()),
                                 last_row);
     
-    auto next_input_row = Ite(input_row >= last_row_ext,
+    auto next_input_row = Ite(input_row >= last_row_ext - 1,
                               BvConst(0, input_row.bit_width()), input_row + row_stride);
     auto next_state = 
-      Ite(input_row >= last_row_ext,
+      Ite(input_row >= last_row_ext - 1,
           BvConst(CONV_CHILD_STATE_ACT_INPUT_CHANNEL_BLOCK, ACCEL_CONV_CHILD_STATE_BITWIDTH),
           BvConst(CONV_CHILD_STATE_ACT_INPUT_COL, ACCEL_CONV_CHILD_STATE_BITWIDTH));
     
@@ -200,11 +200,11 @@ void DefineConvActFetch(Ila& child) {
                                 last_col);
     auto req_len = child.state(CONV_CHILD_ACT_REQ_LENGTH);
 
-    auto next_input_col = Ite(input_col >= last_col_ext,
+    auto next_input_col = Ite(input_col >= last_col_ext - 1,
                               BvConst(0, input_col.bit_width()), input_col + req_len);
     
     auto next_state = 
-      Ite(input_col >= last_col_ext,
+      Ite(input_col >= last_col_ext - 1,
           BvConst(CONV_CHILD_STATE_ACT_INPUT_ROW, ACCEL_CONV_CHILD_STATE_BITWIDTH),
           BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
@@ -229,7 +229,7 @@ void DefineConvActFetch(Ila& child) {
     auto act_fetch_cntr_next = BvConst(0, CONV_CHILD_ACT_FETCH_CNTR_BITWIDTH);
     
     instr.SetUpdate(req_len, req_len_next);
-    instr.SetUpdate(act_fetch_cntr, req_len_next);
+    instr.SetUpdate(act_fetch_cntr, act_fetch_cntr_next);
 
     auto next_state = BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
@@ -242,10 +242,12 @@ void DefineConvActFetch(Ila& child) {
     auto instr = child.NewInstr("accel_conv_child_act_fetch_activations");
     instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_FETCH_ACT));
 
+    auto cntr = child.state(CONV_CHILD_ACT_FETCH_CNTR);
+
     // fetch the activation from internal memory
     //channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
     // + in_row*(input_cols*CHANNEL_BLOCK_SIZE) + in_col*CHANNEL_BLOCK_SIZE)*(ACTIVATION_TOT_WIDTH/8);
-    auto act_addr = act_gen_get_addr(child, input_row, input_col, chan_block);
+    auto act_addr = act_gen_get_addr(child, input_row, input_col+cntr, chan_block);
     instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
 
     auto vir_mem = child.state(VIRTUAL_SOC_MEMORY);
@@ -255,8 +257,7 @@ void DefineConvActFetch(Ila& child) {
       auto act_byte_1 = Load(vir_mem, act_addr + 2*i + 1);
       instr.SetUpdate(elem, Concat(act_byte_1, act_byte_0));
     }
-
-    auto cntr = child.state(CONV_CHILD_ACT_FETCH_CNTR);
+    // update the col fetch counter
     instr.SetUpdate(cntr, cntr+1);
     
     auto next_state = BvConst(CONV_CHILD_STATE_WEIGHT_INIT,
@@ -365,7 +366,7 @@ void DefineConvWeightFetch(Ila& child) {
     auto last_kern_row_ext = Concat(BvConst(0, kern_row.bit_width()-last_kern_row.bit_width()),
                                     last_kern_row);
     
-    auto next_kern_row = Ite(kern_row >= last_kern_row_ext, 
+    auto next_kern_row = Ite(kern_row >= last_kern_row_ext - 1, 
                              kern_row_init, kern_row + Concat(BvConst(0,1), row_stride));
 
     instr.SetUpdate(kern_row, next_kern_row);
@@ -381,7 +382,7 @@ void DefineConvWeightFetch(Ila& child) {
     auto last_act_req = (req_cntr == req_len);
 
     auto next_state = 
-      Ite(kern_row >= last_kern_row_ext,
+      Ite(kern_row >= last_kern_row_ext - 1,
         Ite(last_act_req,
             BvConst(CONV_CHILD_STATE_ACT_INPUT_COL, ACCEL_CONV_CHILD_STATE_BITWIDTH),
             BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH)),
@@ -397,10 +398,10 @@ void DefineConvWeightFetch(Ila& child) {
     auto last_kern_col = child.state(CONV_KERNEL_COL_NUM);
     auto last_kern_col_ext = Concat(BvConst(0, 1), last_kern_col);
 
-    auto next_kern_col = Ite(kern_col >= last_kern_col_ext,
+    auto next_kern_col = Ite(kern_col >= last_kern_col_ext - 1,
                              kern_col_init, kern_col + Concat(BvConst(0,1), col_stride));
     auto next_state =
-      Ite(kern_col >= last_kern_col_ext,
+      Ite(kern_col >= last_kern_col_ext - 1,
           BvConst(CONV_CHILD_STATE_WEIGHT_ROW_FETCH, ACCEL_CONV_CHILD_STATE_BITWIDTH),
           BvConst(CONV_CHILD_STATE_WEIGHT_CHECK_BOUND, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 

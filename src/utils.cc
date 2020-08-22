@@ -33,7 +33,7 @@ namespace hlscnn{
 ExprRef GetCfgRegAlignedData(const Ila& m) {
   auto start = Concat(BvConst(0, 28),
                       Extract(m.input(TOP_SLAVE_ADDR_IN), 3, 0));
-  start = start << 3; // multiply by 8 to get the byte level address of data
+  // start = start << 3; // multiply by 8 to get the byte level address of data
 
   auto data_in_0 = m.input(TOP_SLAVE_DATA_IN_0);
   auto data_in_1 = m.input(TOP_SLAVE_DATA_IN_1);
