@@ -106,6 +106,11 @@ namespace hlscnn {
 #define CONV_CHILD_INPUT_COL_ID "conv_child_input_col_id"
 #define CONV_CHILD_INPUT_COL_ID_BITWIDTH CONV_ROW_SIZE_T
 
+// update 08232020: add a new state for holding the values of column index 
+// in the act fetch loop param (for multiple data fetching with one AXI cmd)
+#define CONV_CHILD_INPUT_COL_ID_LOOP "conv_child_input_col_id_loop"
+#define CONV_CHILD_INPUT_COL_ID_LOOP_BITWIDTH CONV_ROW_SIZE_T
+
 #define CONV_CHILD_KERNEL_COL_ID "conv_child_kernel_col_id"
 #define CONV_CHILD_KERNEL_COL_ID_BITWIDTH CONV_KERNEL_SIZE_T
 

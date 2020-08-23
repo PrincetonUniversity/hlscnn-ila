@@ -106,22 +106,28 @@ void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name
   }
 }
 
-ExprRef act_gen_get_addr(const Ila& child, const ExprRef& input_row,
-                                                  const ExprRef& input_col,
-                                                  const ExprRef& chan_block) {
+ExprRef act_gen_get_addr(const Ila& child, const ExprRef& in_row,
+                                            const ExprRef& in_col,
+                                            const ExprRef& chan_block_idx) {
 //channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
 // + in_row*(input_cols*CHANNEL_BLOCK_SIZE) + in_col*CHANNEL_BLOCK_SIZE)*(ACTIVATION_TOT_WIDTH/8);
   auto base_addr = child.state(CFG_REG_ACCEL_CONV_ACT_BASE_ADDR);
-  auto input_row_ext = Concat(BvConst(0,32-input_row.bit_width()), input_row);
-  auto input_col_ext = Concat(BvConst(0,32-input_col.bit_width()), input_col);
-  auto chan_block_ext = Concat(BvConst(0,32-chan_block.bit_width()), chan_block);
+  auto in_row_ext = Concat(BvConst(0,32-in_row.bit_width()), in_row);
+  auto in_col_ext = Concat(BvConst(0,32-in_col.bit_width()), in_col);
+  auto chan_block_ext = Concat(BvConst(0,32-chan_block_idx.bit_width()), chan_block_idx);
+
   auto chan_block_size = BvConst(CHANNEL_BLOCK_SIZE, 32);
   auto act_tot_width = BvConst(ACT_TOTAL_BITWIDTH, 32);
 
+  auto input_rows_ext = Concat(BvConst(0, 32-CONV_INPUT_ROW_NUM_BITWIDTH),
+                                child.state(CONV_INPUT_ROW_NUM));
+  auto input_cols_ext = Concat(BvConst(0, 32-CONV_INPUT_COL_NUM_BITWIDTH),
+                                child.state(CONV_INPUT_COL_NUM));
+
   auto act_addr = base_addr + 
-                  ((chan_block_ext * input_row_ext * input_col_ext * chan_block_size) +
-                    input_row_ext * (input_col_ext * chan_block_size) +
-                    input_col_ext * chan_block_size) * (ACT_TOTAL_BITWIDTH/8);
+                  ((chan_block_ext * input_rows_ext * input_cols_ext * chan_block_size) +
+                    in_row_ext * (input_cols_ext * chan_block_size) +
+                    in_col_ext * chan_block_size) * (ACT_TOTAL_BITWIDTH/8);
   
   return act_addr;
 }
