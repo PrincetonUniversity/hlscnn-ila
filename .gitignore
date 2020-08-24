@@ -40,3 +40,4 @@ build/*
 
 # unrelated folder
 */.vscode
+.vscode/*

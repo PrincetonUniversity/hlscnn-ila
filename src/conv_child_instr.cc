@@ -27,6 +27,7 @@
 #include <ilang/ilang++.h>
 #include <hlscnn/hlscnn_top.h>
 #include <ilang/util/log.h>
+#include <vector>
 
 namespace ilang {
 namespace hlscnn {
@@ -477,10 +478,11 @@ void DefineConvDatapath(Ila& child) {
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
       auto weight = child.state(GetStateName(CONV_CHILD_WEIGHT_ARRAY, i));
       auto act = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
-      mac_psum = mac_psum + ConvMacPsumMul(weight, act);
+      std::vector<ExprRef> conv_mac_in = {mac_psum, weight, act};
+      mac_psum = ConvMac(conv_mac_in);
     }
 
-    auto act_psum = Psum2Act(mac_psum);
+    auto act_psum = ConvMacPsum2Act(mac_psum);
     instr.SetUpdate(child.state(CONV_CHILD_ACTIVATION_PSUM), act_psum);  
 
     auto next_state = BvConst(CONV_CHILD_STATE_FETCH_OUT_ACT,
@@ -519,9 +521,10 @@ void DefineConvDatapath(Ila& child) {
     auto instr = child.NewInstr("conv_child_dp_bias_relu");
     instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_BIAS_RELU));
 
-    auto psum_val = child.state(CONV_CHILD_ACTIVATION_PSUM);
+    auto psum_val = child.state(CONV_CHILD_ACTIVATION_PSUM); //16
 
     // ------------------------------------------------------------------
+
     auto wbk_row = child.state(CONV_CHILD_KERNEL_ROW_ID);
     auto wbk_col = child.state(CONV_CHILD_KERNEL_COL_ID);
     auto wbact_chblk = child.state(CONV_CHILD_CHAN_BLOCK_ID);
@@ -533,9 +536,12 @@ void DefineConvDatapath(Ila& child) {
     auto wbact_idx = URem(ofilter_idx - 1, BvConst(CONV_VECTOR_SIZE, ofilter_idx.bit_width()));
     auto oact_element = GetActVectorState(child, CONV_CHILD_O_ACT_ARRAY, wbact_idx);
 
+    // oact_out is 32 bit
     auto oact_out = Ite(is_first_psum & (en_accum == 0),
-                        psum_val, ActAdd(psum_val, oact_element));
+                        Concat(BvConst(0, PSUM_TOTAL_BITWIDTH-ACT_TOTAL_BITWIDTH), psum_val), 
+                        ActAdd2Psum(psum_val, oact_element));
     // ------------------------------------------------------------------
+
     auto wbact_row = child.state(CONV_CHILD_INPUT_ROW_ID);
     auto wbact_col = child.state(CONV_CHILD_INPUT_COL_ID);
 
@@ -544,16 +550,17 @@ void DefineConvDatapath(Ila& child) {
     auto chan_bias = child.state(CONV_CHAN_BIAS);
 
     oact_out = Ite(is_last_psum & (en_bias != 0), 
-                   ActAdd(oact_out, chan_bias), oact_out);
+                   ActAdd2Psum(oact_out, chan_bias), oact_out);
     
     auto en_relu = child.state(CONV_ENABLE_RELU);
 
-    oact_out = Ite(is_last_psum & (en_relu != 0),
-                   ActRelu(oact_out), oact_out);
+    oact_out = Ite(is_last_psum & (en_relu != 0), PsumRelu(oact_out), oact_out);
+    auto oact_out_act = Psum2Act(oact_out);
+
     // ------------------------------------------------------------------
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
       auto out_element = child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i));
-      auto out_element_next = Ite(wbact_idx == i, oact_out, out_element);
+      auto out_element_next = Ite(wbact_idx == i, oact_out_act, out_element);
       instr.SetUpdate(out_element, out_element_next);
     }
 

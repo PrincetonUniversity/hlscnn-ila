@@ -28,21 +28,27 @@
 #define UNINTERPRETED_FUNC_H__
 
 #include <ilang/ilang++.h>
+#include <vector>
 
 namespace ilang {
 namespace hlscnn {
 
 static auto mul_in = SortRef::BV(WEIGHT_TOTAL_BITWIDTH);
 static auto mul_out = SortRef::BV(PSUM_TOTAL_BITWIDTH);
-static FuncRef ConvMacPsumMul("ConvMacPsumMul", mul_out, mul_in, mul_in);
-
 static auto psum_type = SortRef::BV(PSUM_TOTAL_BITWIDTH);
-static auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
-static FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
-
 static auto act_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
-static FuncRef ActAdd("ActAdd", act_type, act_type, act_type);
-static FuncRef ActRelu("ActRelu", act_type, act_type);
+
+static std::vector<SortRef> ConvMac_in = {psum_type, mul_in, mul_in};
+
+static FuncRef ConvMac("ConvMac", psum_type, ConvMac_in);
+static FuncRef ConvMacPsum2Act("ConvMacPsum2Act", act_type, psum_type);
+
+static auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
+
+
+static FuncRef ActAdd2Psum("ActAdd2Psum", psum_type, act_type, act_type);
+static FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
+static FuncRef PsumRelu("PsumRelu", psum_type, psum_type);
 
 } // namespace ilang
 } // namespace hlscnn
