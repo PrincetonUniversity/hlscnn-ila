@@ -3,7 +3,7 @@
 
 // conv_accel.h:799
 // multiply-accumulate operation
-sc_biguint<32> hlscnn::ConvMacPsumMul(sc_biguint<32> psum, sc_biguint<16> wt, sc_biguint<16> act) {
+sc_biguint<32> hlscnn::ConvMac(sc_biguint<32> psum, sc_biguint<16> wt, sc_biguint<16> act) {
   
   ac_int<32, false> psum_ac = psum.to_uint();
   ac_int<16, false> wt_ac = wt.to_uint();
@@ -59,7 +59,7 @@ sc_biguint<32> hlscnn::ActAdd2Psum(sc_biguint<16> arg_0, sc_biguint<16> arg_1) {
   ac_int<32, false> out_ac = out_psum.slc<32>(0);
   sc_biguint<32> out = out_ac.to_uint();
 
-  return out_ac;
+  return out;
 }
 
 // conv_accel.h:1091
