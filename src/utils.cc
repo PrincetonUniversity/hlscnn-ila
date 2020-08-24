@@ -194,6 +194,7 @@ ExprRef WtGetAddr(const Ila& child, const ExprRef& filter_id,
   auto kernel_rows = child.state(CONV_KERNEL_ROW_NUM);
   auto kernel_cols = child.state(CONV_KERNEL_COL_NUM);
   auto input_channels = child.state(CONV_INPUT_CHAN_NUM);
+
   auto chan_block_size = BvConst(CHANNEL_BLOCK_SIZE, input_channels.bit_width());
   auto last_chan_block = 
     Ite(URem(input_channels, chan_block_size) == 0,
@@ -209,8 +210,8 @@ ExprRef WtGetAddr(const Ila& child, const ExprRef& filter_id,
 
   auto last_chan_block_ext = Concat(BvConst(0, 32-last_chan_block.bit_width()), last_chan_block);
 
-  auto addr = 
-    base_addr + (
+  // update 08242020: no need to add the base address for ILA mem access.
+  auto addr = (
     (filter_id_ext * kernel_rows_ext * kernel_cols_ext * last_chan_block_ext * CHANNEL_BLOCK_SIZE) +
     (chan_block_ext * kernel_rows_ext * kernel_cols_ext * CHANNEL_BLOCK_SIZE) +
     k_row_ext * (kernel_cols_ext * CHANNEL_BLOCK_SIZE) +
@@ -252,7 +253,7 @@ ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
   auto out_col = input_col_ext - k_col_ext + last_kernel_col_ext/BvConst(2, ext_bitwidth);
 
   auto out_act_addr = 
-        base_addr + (
+        (
           (filter_idx_ext * last_row_ext * last_col_ext * CHANNEL_BLOCK_SIZE) +
           out_row * (last_col_ext * CHANNEL_BLOCK_SIZE) +
           out_col * CHANNEL_BLOCK_SIZE

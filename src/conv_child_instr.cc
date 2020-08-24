@@ -264,6 +264,8 @@ void DefineConvActFetch(Ila& child) {
     instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
 
     auto vir_mem = child.state(VIRTUAL_SOC_MEMORY);
+    // for vir memory access no need to add the activation base
+    act_addr = act_addr - child.state(CONV_ACT_BASE);
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
       auto elem = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
       auto act_byte_0 = Load(vir_mem, act_addr + 2*i);
