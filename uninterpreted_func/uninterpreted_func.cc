@@ -62,6 +62,27 @@ sc_biguint<32> hlscnn::ActAdd2Psum(sc_biguint<16> arg_0, sc_biguint<16> arg_1) {
   return out_ac;
 }
 
+// conv_accel.h:1091
+// add bias
+sc_biguint<32> hlscnn::ConvAddBias(sc_biguint<32> in, sc_biguint<16> bias) {
+  
+  ac_int<32, false> in_ac = in.to_uint();
+  ac_int<16, false> bias_ac = in.to_uint();
+
+  conv_psum_t in_psum;
+  conv_weight_t bias_wt;
+  conv_psum_t out_psum;
+
+  in_psum.set_slc<32>(0, in_ac);
+  bias_wt.set_slc<16>(0, bias_ac);
+  out_psum = in_psum + bias_wt;
+
+  ac_int<32, false> out_ac = out_psum.slc<32>(0);
+  sc_biguint<32> out = out_ac.to_uint();
+
+  return out;
+}
+
 // conv_accel.h:1097
 // psum relu function
 sc_biguint<32> hlscnn::PsumRelu(sc_biguint<32> arg_0) {

@@ -47,6 +47,8 @@ static auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
 
 
 static FuncRef ActAdd2Psum("ActAdd2Psum", psum_type, act_type, act_type);
+static FuncRef ConvAddBias("ConvAddBias", psum_type, psum_type, act_type);
+
 static FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
 static FuncRef PsumRelu("PsumRelu", psum_type, psum_type);
 

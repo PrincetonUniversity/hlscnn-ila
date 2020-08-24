@@ -538,7 +538,7 @@ void DefineConvDatapath(Ila& child) {
 
     // oact_out is 32 bit
     auto oact_out = Ite(is_first_psum & (en_accum == 0),
-                        Concat(BvConst(0, PSUM_TOTAL_BITWIDTH-ACT_TOTAL_BITWIDTH), psum_val), 
+                        ActAdd2Psum(psum_val, BvConst(0, ACT_TOTAL_BITWIDTH)), 
                         ActAdd2Psum(psum_val, oact_element));
     // ------------------------------------------------------------------
 
@@ -550,7 +550,7 @@ void DefineConvDatapath(Ila& child) {
     auto chan_bias = child.state(CONV_CHAN_BIAS);
 
     oact_out = Ite(is_last_psum & (en_bias != 0), 
-                   ActAdd2Psum(oact_out, chan_bias), oact_out);
+                   ConvAddBias(oact_out, chan_bias), oact_out);
     
     auto en_relu = child.state(CONV_ENABLE_RELU);
 
