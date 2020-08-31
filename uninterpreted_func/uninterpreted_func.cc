@@ -1,5 +1,10 @@
 #include <hlscnn.h>
 #include <systemc.h>
+#include <ac_int.h>
+#include <ac_fixed.h>
+#include <ac_math.h>
+
+#include <common.h>
 
 // conv_accel.h:799
 // multiply-accumulate operation
@@ -18,6 +23,7 @@ sc_biguint<32> hlscnn::ConvMac(sc_biguint<32> psum, sc_biguint<16> wt, sc_biguin
   macc_psum_int.set_slc<32>(0, psum_ac);
 
   macc_psum_int += wt_op*act_op;
+//  std::cout << macc_psum_int.to_double() << std::endl;
   
   ac_int<32, false> out_ac = macc_psum_int.slc<32>(0);
   sc_biguint<32> out = out_ac.to_uint();
@@ -58,6 +64,7 @@ sc_biguint<32> hlscnn::ActAdd2Psum(sc_biguint<16> arg_0, sc_biguint<16> arg_1) {
 
   ac_int<32, false> out_ac = out_psum.slc<32>(0);
   sc_biguint<32> out = out_ac.to_uint();
+//  std::cout << "Psum: " << std::dec << arg_0_act.to_double() << "::" << out_psum.to_double() << '\t';
 
   return out;
 }
@@ -67,7 +74,7 @@ sc_biguint<32> hlscnn::ActAdd2Psum(sc_biguint<16> arg_0, sc_biguint<16> arg_1) {
 sc_biguint<32> hlscnn::ConvAddBias(sc_biguint<32> in, sc_biguint<16> bias) {
   
   ac_int<32, false> in_ac = in.to_uint();
-  ac_int<16, false> bias_ac = in.to_uint();
+  ac_int<16, false> bias_ac = bias.to_uint();
 
   conv_psum_t in_psum;
   conv_weight_t bias_wt;
@@ -79,6 +86,7 @@ sc_biguint<32> hlscnn::ConvAddBias(sc_biguint<32> in, sc_biguint<16> bias) {
 
   ac_int<32, false> out_ac = out_psum.slc<32>(0);
   sc_biguint<32> out = out_ac.to_uint();
+//  std::cout << "Bias: " << std::dec << bias_wt.to_double() << '\t';
 
   return out;
 }
@@ -109,6 +117,8 @@ sc_biguint<16> hlscnn::Psum2Act(sc_biguint<32> arg_0) {
 
   arg_0_psum.set_slc<32>(0, arg_0_ac);
   out_act = conv_activation_t(arg_0_psum);
+
+//  std::cout << arg_0_ac.to_int() << "::" << out_act.to_double() << std::endl;
 
   ac_int<16, false> out_ac = out_act.slc<16>(0);
   sc_biguint<16> out = out_ac.to_uint();
