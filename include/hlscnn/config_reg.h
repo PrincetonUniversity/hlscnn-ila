@@ -29,12 +29,58 @@
 #ifndef CONFIG_REG_H__
 #define CONFIG_REG_H__
 
+#include <cmath>
+
 namespace ilang {
 namespace hlscnn {
-
+  
   // CFG parameters
   #define CFG_REG_BITWIDTH 32
-  #define CFG_REG_BYTE_NUM CONFIG_REG_BITWIDTH/8
+  #define CFG_REG_BYTEWIDTH CFG_REG_BITWIDTH/8
+  #define CFG_REG_SIZE_BITWIDTH (int)(std::floor(std::log2(CFG_REG_BYTEWIDTH)))
+
+  /*********************************************************/
+  // define config state id, same as hlscnn design
+  /*********************************************************/
+  enum ConfigRegId {
+    // Unused configuration registers.
+    ConfigReg1,
+    ConfigReg2,
+    ConfigReg3,
+    ConfigReg4,
+
+    SocMemBaseAddr,
+    SocMemRdWrLength,
+    AccelSpadCFG,
+    AxiMasterSelfTestTrigger,
+    AxiMasterSelfTestRemoteBaseAddr,
+    AcpMasterSelfTestTrigger,
+    AcpMasterSelfTestRemoteBaseAddr,
+    AxiAttrConfig,
+    AccelStartFlagReg,
+    AccelFCWeightsBase,
+    AccelFCActivationBase,
+    AccelFCSizeConfig,
+    AccelBiasActivationConfig,
+    AccelConvTrigger,
+    AccelConvActivationBaseAddr,
+    AccelConvWeightsBaseAddr,
+    AccelConvOutputsBaseAddr,
+    AccelConvInputSizeConfig,
+    AccelConvOutputSizeConfig,
+    AccelConvKernelSizeConfig,
+    AccelConvChannelConfig,
+    AccelReductionTrigger,
+    AccelReductionInputBaseAddr,
+    AccelReductionOutputBaseAddr,
+    AccelReductionInputSizeConfig,
+    AccelReductionBiasConfig,
+    NumCfgRegisters
+  };
+
+  /*********************************************************/
+  // define config state names
+  /*********************************************************/
 
   //SocMemBaseAddr is used to specify base address of UMEM or RRAM
   //from which activation/weights will be read from (or written to)
@@ -130,7 +176,7 @@ namespace hlscnn {
   // ------------------------------------------------------------------------------------------------------------------
   // |  31-24|    22     |  21-19              |     18                            |         17         |     16   |     15-0            |
   // ------------------------------------------------------------------------------------------------------------------
-  #define CFG_REG_ACCEL_CHANNEL_CFG "cfg_reg_accel_channel_cfg"
+  #define CFG_REG_ACCEL_CONV_CHANNEL_CFG "cfg_reg_accel_conv_channel_cfg"
 
 
 
@@ -166,4 +212,4 @@ namespace hlscnn {
 } // namespace ilang
 
 
-#endif CONFIG_REG_HH__
+#endif // CONFIG_REG_H__

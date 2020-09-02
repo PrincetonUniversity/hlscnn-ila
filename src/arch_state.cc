@@ -22,53 +22,29 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: hlscnn_top.h
-
-#ifndef HLSCNN_TOP_H__
-#define HLSCNN_TOP_H__
+// File: arch_state.cc
 
 #include <ilang/ilang++.h>
-#include <string>
-#include <ilang/util/log.h>
-
-#include <hlscnn/top_config.h>
-#include <hlscnn/common_config.h>
-#include <hlscnn/config_reg.h>
-#include <hlscnn/conv_param.h>
-#include <hlscnn/fc_param.h>
-#include <hlscnn/reduction_param.h>
-#include <hlscnn/internal_state.h>
-#include <hlscnn/utils.h>
-#include <hlscnn/uninterpreted_func.h>
+#include <hlscnn/hlscnn_top.h>
 
 namespace ilang {
-
 namespace hlscnn {
 
-Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
+void DefineArchState(Ila& m) {
+  // scratchpad0 and scratchpad1 are declared as memstate here
+  m.NewMemState(SCRATCH_PAD_0, TOP_SLAVE_ADDR_IN_BITWIDTH, SCRATCH_PAD_DATA_BITWIDTH);
+  m.state(SCRATCH_PAD_0).SetEntryNum(SPAD_BYTE_ENTRY_NUM);
 
-void DefineTopIO(Ila& m);
+  m.NewMemState(SCRATCH_PAD_1, TOP_SLAVE_ADDR_IN_BITWIDTH, SCRATCH_PAD_DATA_BITWIDTH);
+  m.state(SCRATCH_PAD_1).SetEntryNum(SPAD_BYTE_ENTRY_NUM);
 
-void DefineConfigReg(Ila& m);
-void DefineFCParam(Ila& m);
-void DefineConvParam(Ila& m);
-void DefineReduceParam(Ila& m);
-
-void DefineArchState(Ila& m);
-void DefineInternalState(Ila& m);
-
-void DefineInitCond(Ila& m);
-
-void DefineConfigInstr(Ila& m);
-void DefineSPADInstr(Ila& m);
-void DefineAccelConvTrigger(Ila& m);
-
-void DefineVirMemInstr(Ila& m);
-// child instructions
-void DefineAXIMasterChild(Ila& m);
-void DefineAccelConvChild(Ila& m);
-
+  // ---------------------------------------------------------------------------------
+  // Declare a virtual memeory state for external memory
+  // ---------------------------------------------------------------------------------
+  m.NewMemState(VIRTUAL_SOC_MEMORY, TOP_SLAVE_ADDR_IN_BITWIDTH, VIRTUAL_SOC_MEMORY_DATA_BITWIDTH);
+  m.state(VIRTUAL_SOC_MEMORY).SetEntryNum(VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM);
 }
-};
 
-#endif // HLSCNN_TOP_H__
+
+} // namespace hlscnn
+} // namespace ilang

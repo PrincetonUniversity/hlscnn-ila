@@ -22,53 +22,21 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: hlscnn_top.h
-
-#ifndef HLSCNN_TOP_H__
-#define HLSCNN_TOP_H__
+// File: init_condition.cc
 
 #include <ilang/ilang++.h>
-#include <string>
-#include <ilang/util/log.h>
-
-#include <hlscnn/top_config.h>
-#include <hlscnn/common_config.h>
-#include <hlscnn/config_reg.h>
-#include <hlscnn/conv_param.h>
-#include <hlscnn/fc_param.h>
-#include <hlscnn/reduction_param.h>
-#include <hlscnn/internal_state.h>
-#include <hlscnn/utils.h>
-#include <hlscnn/uninterpreted_func.h>
+#include <hlscnn/hlscnn_top.h>
 
 namespace ilang {
-
 namespace hlscnn {
 
-Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
-
-void DefineTopIO(Ila& m);
-
-void DefineConfigReg(Ila& m);
-void DefineFCParam(Ila& m);
-void DefineConvParam(Ila& m);
-void DefineReduceParam(Ila& m);
-
-void DefineArchState(Ila& m);
-void DefineInternalState(Ila& m);
-
-void DefineInitCond(Ila& m);
-
-void DefineConfigInstr(Ila& m);
-void DefineSPADInstr(Ila& m);
-void DefineAccelConvTrigger(Ila& m);
-
-void DefineVirMemInstr(Ila& m);
-// child instructions
-void DefineAXIMasterChild(Ila& m);
-void DefineAccelConvChild(Ila& m);
+void DefineInitCond(Ila& m) {
+  // set the initial values of these strides to be 1 to avoid system divide by zero error
+  auto kern_row_stride = m.state(CONV_KERNEL_R_STRIDE);
+  auto kern_col_stride = m.state(CONV_KERNEL_C_STRIDE);
+  m.AddInit(kern_row_stride == 1);
+  m.AddInit(kern_col_stride == 1);
+}
 
 }
-};
-
-#endif // HLSCNN_TOP_H__
+}

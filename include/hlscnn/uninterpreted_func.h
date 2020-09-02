@@ -22,53 +22,37 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: hlscnn_top.h
+// File: uninterpreted_func.h
 
-#ifndef HLSCNN_TOP_H__
-#define HLSCNN_TOP_H__
+#ifndef UNINTERPRETED_FUNC_H__
+#define UNINTERPRETED_FUNC_H__
 
 #include <ilang/ilang++.h>
-#include <string>
-#include <ilang/util/log.h>
-
-#include <hlscnn/top_config.h>
-#include <hlscnn/common_config.h>
-#include <hlscnn/config_reg.h>
-#include <hlscnn/conv_param.h>
-#include <hlscnn/fc_param.h>
-#include <hlscnn/reduction_param.h>
-#include <hlscnn/internal_state.h>
-#include <hlscnn/utils.h>
-#include <hlscnn/uninterpreted_func.h>
+#include <vector>
 
 namespace ilang {
-
 namespace hlscnn {
 
-Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
+static auto mul_in = SortRef::BV(WEIGHT_TOTAL_BITWIDTH);
+static auto mul_out = SortRef::BV(PSUM_TOTAL_BITWIDTH);
+static auto psum_type = SortRef::BV(PSUM_TOTAL_BITWIDTH);
+static auto act_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
 
-void DefineTopIO(Ila& m);
+static std::vector<SortRef> ConvMac_in = {psum_type, mul_in, mul_in};
 
-void DefineConfigReg(Ila& m);
-void DefineFCParam(Ila& m);
-void DefineConvParam(Ila& m);
-void DefineReduceParam(Ila& m);
+static FuncRef ConvMac("ConvMac", psum_type, ConvMac_in);
+static FuncRef ConvMacPsum2Act("ConvMacPsum2Act", act_type, psum_type);
 
-void DefineArchState(Ila& m);
-void DefineInternalState(Ila& m);
+static auto act_psum_type = SortRef::BV(ACT_TOTAL_BITWIDTH);
 
-void DefineInitCond(Ila& m);
 
-void DefineConfigInstr(Ila& m);
-void DefineSPADInstr(Ila& m);
-void DefineAccelConvTrigger(Ila& m);
+static FuncRef ActAdd2Psum("ActAdd2Psum", psum_type, act_type, act_type);
+static FuncRef ConvAddBias("ConvAddBias", psum_type, psum_type, act_type);
 
-void DefineVirMemInstr(Ila& m);
-// child instructions
-void DefineAXIMasterChild(Ila& m);
-void DefineAccelConvChild(Ila& m);
+static FuncRef Psum2Act("Psum2Act", act_psum_type, psum_type);
+static FuncRef PsumRelu("PsumRelu", psum_type, psum_type);
 
-}
-};
+} // namespace ilang
+} // namespace hlscnn
 
-#endif // HLSCNN_TOP_H__
+#endif

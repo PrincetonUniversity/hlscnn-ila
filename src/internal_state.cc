@@ -22,53 +22,30 @@
 // SOFTWARE.
 // =============================================================================
 
-// File: hlscnn_top.h
-
-#ifndef HLSCNN_TOP_H__
-#define HLSCNN_TOP_H__
+// File: internal_state.cc
 
 #include <ilang/ilang++.h>
-#include <string>
-#include <ilang/util/log.h>
-
-#include <hlscnn/top_config.h>
-#include <hlscnn/common_config.h>
-#include <hlscnn/config_reg.h>
-#include <hlscnn/conv_param.h>
-#include <hlscnn/fc_param.h>
-#include <hlscnn/reduction_param.h>
-#include <hlscnn/internal_state.h>
-#include <hlscnn/utils.h>
-#include <hlscnn/uninterpreted_func.h>
+#include <hlscnn/hlscnn_top.h>
 
 namespace ilang {
-
 namespace hlscnn {
 
-Ila GetHlscnnIla(const std::string& model_name = "hlscnn");
+void DefineInternalState(Ila& m) {
 
-void DefineTopIO(Ila& m);
-
-void DefineConfigReg(Ila& m);
-void DefineFCParam(Ila& m);
-void DefineConvParam(Ila& m);
-void DefineReduceParam(Ila& m);
-
-void DefineArchState(Ila& m);
-void DefineInternalState(Ila& m);
-
-void DefineInitCond(Ila& m);
-
-void DefineConfigInstr(Ila& m);
-void DefineSPADInstr(Ila& m);
-void DefineAccelConvTrigger(Ila& m);
-
-void DefineVirMemInstr(Ila& m);
-// child instructions
-void DefineAXIMasterChild(Ila& m);
-void DefineAccelConvChild(Ila& m);
+  ////////////////////////////////////
+  // AXI master interface states
+  ////////////////////////////////////
+  m.NewBvState(ACCEL_MASTER_AXI_CHILD_VALID_FLAG, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH);
+  m.NewBvState(ACCEL_MASTER_AXI_CHILD_STATE, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH);
+  m.NewBvState(ACCEL_SPAD_WR_ADDR, ACCEL_SPAD_WR_ADDR_BITWIDTH);
+  
+  ////////////////////////////////////
+  // conv internal state
+  ///////////////////////////////////
+  m.NewBvState(ACCEL_CONV_CHILD_VALID_FLAG, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH);
+  m.NewBvState(ACCEL_CONV_CHILD_STATE, ACCEL_CONV_CHILD_STATE_BITWIDTH);
 
 }
-};
 
-#endif // HLSCNN_TOP_H__
+} // namespace hlscnn 
+} // namespace ilang
