@@ -263,75 +263,41 @@ void DefineConvActFetch(Ila& child) {
     auto act_addr = act_gen_get_addr(child, input_row, input_col_next, chan_block);
     instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
 
-    auto vir_mem = child.state(VIRTUAL_SOC_MEMORY);
-    // for vir memory access no need to add the activation base
-    act_addr = act_addr - child.state(CONV_ACT_BASE);
-    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
-      auto elem = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
-      auto act_byte_0 = Load(vir_mem, act_addr + 2*i);
-      auto act_byte_1 = Load(vir_mem, act_addr + 2*i + 1);
-      instr.SetUpdate(elem, Concat(act_byte_1, act_byte_0));
-    }
-    
+    // auto vir_mem = child.state(VIRTUAL_SOC_MEMORY);
+    // // for vir memory access no need to add the activation base
+    // act_addr = act_addr - child.state(CONV_ACT_BASE);
+    // for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
+    //   auto elem = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
+    //   auto act_byte_0 = Load(vir_mem, act_addr + 2*i);
+    //   auto act_byte_1 = Load(vir_mem, act_addr + 2*i + 1);
+    //   instr.SetUpdate(elem, Concat(act_byte_1, act_byte_0));
+    // }
+
+    // fetch activations from AXI master port
+    // assume activations are valid at the AXI master port when instruction is issued
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 0)),
+      Concat(child.input(TOP_MASTER_DATA_IN_1), child.input(TOP_MASTER_DATA_IN_0)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 1)),
+      Concat(child.input(TOP_MASTER_DATA_IN_3), child.input(TOP_MASTER_DATA_IN_2)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 2)),
+      Concat(child.input(TOP_MASTER_DATA_IN_5), child.input(TOP_MASTER_DATA_IN_4)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 3)),
+      Concat(child.input(TOP_MASTER_DATA_IN_7), child.input(TOP_MASTER_DATA_IN_6)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 4)),
+      Concat(child.input(TOP_MASTER_DATA_IN_9), child.input(TOP_MASTER_DATA_IN_8)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 5)),
+      Concat(child.input(TOP_MASTER_DATA_IN_11), child.input(TOP_MASTER_DATA_IN_10)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 6)),
+      Concat(child.input(TOP_MASTER_DATA_IN_13), child.input(TOP_MASTER_DATA_IN_12)));
+    instr.SetUpdate(child.state(GetStateName(CONV_CHILD_ACT_ARRAY, 7)),
+      Concat(child.input(TOP_MASTER_DATA_IN_15), child.input(TOP_MASTER_DATA_IN_14)));
+
     auto next_state = BvConst(CONV_CHILD_STATE_WEIGHT_INIT,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
 
     instr.SetUpdate(state, next_state);    
   }
 
-  // { // instr ---- sending activation fetching request
-  //   // TODO: check correctness! The use of the virtual internal memory as external memory
-  //   auto instr = child.NewInstr("accel_conv_child_act_send_rd_req");
-  //   instr.SetDecode(state == CONV_CHILD_STATE_ACT_SEND_RD_REQ);
-    
-  //   //channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
-  //   // + in_row*(input_cols*CHANNEL_BLOCK_SIZE) + in_col*CHANNEL_BLOCK_SIZE)*(ACTIVATION_TOT_WIDTH/8);
-  //   auto act_addr = act_gen_get_addr(child, input_row, input_col, chan_block);
-
-  //   // push the act fetching request to the master AXI interface
-  //   instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_VALID_FLAG),
-  //         BvConst(ACCEL_CONV_CHILD_VALID, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH));
-  //   instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
-  //   instr.SetUpdate(child.state(TOP_MASTER_IF_RD), 
-  //                   BvConst(ACCEL_CONV_CHILD_VALID, TOP_MASTER_IF_RD_BITWIDTH));
-  //   instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_STATE),
-  //           BvConst(MASTER_AXI_CHILD_STATE_ACT_RD, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
-    
-  //   // setting the next state
-  //   auto next_state = BvConst(CONV_CHILD_STATE_ACT_RECV_RD_RESP, ACCEL_CONV_CHILD_STATE_BITWIDTH);
-  //   instr.SetUpdate(state, next_state);
-  // }
-
-  // { // instr ---- receiving activations
-  //   // TODO: this instr is to be abstracted. we shouldn't model the low level AXI details
-  //   auto instr = child.NewInstr("accel_conv_child_act_recv_rd_resp");
-  //   // this instructions should wait for the resp of axi master rd
-  //   auto decode_cond = ((state == CONV_CHILD_STATE_ACT_RECV_RD_RESP) &
-  //         child.input(TOP_MASTER_RD_RESP_VALID_FLAG) == ACCEL_CONV_CHILD_VALID);
-
-  //   instr.SetDecode(decode_cond);
-
-  //   for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
-  //     auto elem = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
-  //     auto act_in_l = child.input(GetStateName(TOP_MASTER_DATA_IN, 2*i));
-  //     auto act_in_h = child.input(GetStateName(TOP_MASTER_DATA_IN, 2*i+1));
-      
-  //     instr.SetUpdate(elem, Concat(act_in_h, act_in_l));
-  //   }
-
-  //   // set axi master rd command off
-  //   instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_VALID_FLAG),
-  //         BvConst(ACCEL_CONV_CHILD_INVALID, ACCEL_MASTER_AXI_CHILD_VALID_FLAG_BITWIDTH));
-  //   instr.SetUpdate(child.state(TOP_MASTER_IF_RD),
-  //                   BvConst(ACCEL_CONV_CHILD_INVALID, TOP_MASTER_IF_RD_BITWIDTH));
-  //   instr.SetUpdate(child.state(ACCEL_MASTER_AXI_CHILD_STATE),
-  //                   BvConst(MASTER_AXI_CHILD_STATE_IDLE, ACCEL_MASTER_AXI_CHILD_STATE_BITWIDTH));
-
-  //   auto next_state = BvConst(CONV_CHILD_STATE_WEIGHT_INIT,
-  //                             ACCEL_CONV_CHILD_STATE_BITWIDTH);
-
-  //   instr.SetUpdate(state, next_state);
-  // }
 }
 
 void DefineConvWeightFetch(Ila& child) {
