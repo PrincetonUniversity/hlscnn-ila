@@ -45,6 +45,13 @@ void DefineInternalState(Ila& m) {
   m.NewBvState(ACCEL_CONV_CHILD_VALID_FLAG, ACCEL_CONV_CHILD_VALID_FLAG_BITWIDTH);
   m.NewBvState(ACCEL_CONV_CHILD_STATE, ACCEL_CONV_CHILD_STATE_BITWIDTH);
 
+  ///////////////////////////////////
+  // SPAD internal state
+  ///////////////////////////////////
+  m.NewBvState(SPAD_CHILD_VALID_FLAG, SPAD_CHILD_VALID_FLAG_BITWIDTH);
+  m.NewBvState(SPAD_RD_WR_CNTR, SPAD_RD_WR_CNTR_BITWIDTH);
+  m.NewBvState(SPAD_CHILD_TARGET, SPAD_CHILD_TARGET_BITWIDTH);
+
 }
 
 } // namespace hlscnn 
