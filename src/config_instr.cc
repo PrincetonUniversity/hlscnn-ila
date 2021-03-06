@@ -151,13 +151,13 @@ void DefineConfigInstr(Ila& m) {
   SetConfigRegWrInstr(m, SocMemBaseAddr, CFG_REG_SOC_MEM_BASE_ADDR);
   SetConfigRegWrInstr(m, SocMemRdWrLength, CFG_REG_SOC_MEM_RD_WR_LENGTH);
 
-  SetConfigRegWrInstr(m, AccelSpadCFG, CFG_REG_ACCEL_SPAD_CFG);
+  // SetConfigRegWrInstr(m, AccelSpadCFG, CFG_REG_ACCEL_SPAD_CFG);
 
-  // SetConfigRegWrInstr(m, AccelStartFlagReg, CFG_REG_ACCEL_FC_START_FLAG_REG);
-  SetConfigRegWrInstr(m, AccelFCWeightsBase, CFG_REG_ACCEL_FC_WEIGHT_BASE);
-  SetConfigRegWrInstr(m, AccelFCActivationBase, CFG_REG_ACCEL_FC_ACT_BASE);
-  SetConfigRegWrInstr(m, AccelFCSizeConfig, CFG_REG_ACCEL_FC_SIZE_CONFIG);
-  SetConfigRegWrInstr(m, AccelBiasActivationConfig, CFG_REG_ACCEL_BIAS_ACT_CONFIG);
+  // // SetConfigRegWrInstr(m, AccelStartFlagReg, CFG_REG_ACCEL_FC_START_FLAG_REG);
+  // SetConfigRegWrInstr(m, AccelFCWeightsBase, CFG_REG_ACCEL_FC_WEIGHT_BASE);
+  // SetConfigRegWrInstr(m, AccelFCActivationBase, CFG_REG_ACCEL_FC_ACT_BASE);
+  // SetConfigRegWrInstr(m, AccelFCSizeConfig, CFG_REG_ACCEL_FC_SIZE_CONFIG);
+  // SetConfigRegWrInstr(m, AccelBiasActivationConfig, CFG_REG_ACCEL_BIAS_ACT_CONFIG);
   
   SetConfigRegWrInstr(m, AccelConvActivationBaseAddr, CFG_REG_ACCEL_CONV_ACT_BASE_ADDR);
   SetConfigRegWrInstr(m, AccelConvWeightsBaseAddr, CFG_REG_ACCEL_CONV_WEIGHT_BASE_ADDR);
@@ -167,10 +167,10 @@ void DefineConfigInstr(Ila& m) {
   SetConfigRegWrInstr(m, AccelConvKernelSizeConfig, CFG_REG_ACCEL_KERNEL_SIZE_CFG);
   SetConfigRegWrInstr(m, AccelConvChannelConfig, CFG_REG_ACCEL_CONV_CHANNEL_CFG);
 
-  SetConfigRegWrInstr(m, AccelReductionInputBaseAddr, CFG_REG_ACCEL_REDUCTION_INPUT_BASE_ADDR);
-  SetConfigRegWrInstr(m, AccelReductionOutputBaseAddr, CFG_REG_ACCEL_REDUCTION_OUTPUT_BASE_ADDR);
-  SetConfigRegWrInstr(m, AccelReductionInputSizeConfig, CFG_REG_ACCEL_REDUCTION_INPUT_SIZE_CFG);
-  SetConfigRegWrInstr(m, AccelReductionBiasConfig, CFG_REG_ACCEL_REDUCTION_BIAS_CONFIG);
+  // SetConfigRegWrInstr(m, AccelReductionInputBaseAddr, CFG_REG_ACCEL_REDUCTION_INPUT_BASE_ADDR);
+  // SetConfigRegWrInstr(m, AccelReductionOutputBaseAddr, CFG_REG_ACCEL_REDUCTION_OUTPUT_BASE_ADDR);
+  // SetConfigRegWrInstr(m, AccelReductionInputSizeConfig, CFG_REG_ACCEL_REDUCTION_INPUT_SIZE_CFG);
+  // SetConfigRegWrInstr(m, AccelReductionBiasConfig, CFG_REG_ACCEL_REDUCTION_BIAS_CONFIG);
 
 }
 

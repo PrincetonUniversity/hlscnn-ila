@@ -29,6 +29,7 @@
 
 #include <hlscnn/conv_param.h>
 #include <hlscnn/common_config.h>
+#include <hlscnn/config_reg.h>
 
 namespace ilang {
 namespace hlscnn {
@@ -182,6 +183,19 @@ namespace hlscnn {
 #define CONV_CHILD_ACT_FETCH_CNTR_BITWIDTH CONV_ROW_SIZE_T
 
 
+//////////////////////////////////////////////////////////
+// internal states for SPAD child instructions 
+//////////////////////////////////////////////////////////
+#define SPAD_CHILD_VALID_FLAG "spad_child_valid_flag"
+#define SPAD_CHILD_VALID_FLAG_BITWIDTH 1
+
+// counter for current read/write length
+#define SPAD_RD_WR_CNTR "spad_rd_wr_cntr"
+#define SPAD_RD_WR_CNTR_BITWIDTH CFG_REG_BITWIDTH
+
+// reg for distinguish spad read/write on spad0 or spad1
+#define SPAD_CHILD_TARGET "spad_child_target"
+#define SPAD_CHILD_TARGET_BITWIDTH 1
 
 
 

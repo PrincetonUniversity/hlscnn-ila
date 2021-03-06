@@ -67,6 +67,7 @@ void DefineVirMemInstr(Ila& m);
 // child instructions
 void DefineAXIMasterChild(Ila& m);
 void DefineAccelConvChild(Ila& m);
+void DefineSPADInstrChild(Ila& m);
 
 }
 };
