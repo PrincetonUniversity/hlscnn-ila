@@ -43,6 +43,10 @@ void DefineArchState(Ila& m) {
   // ---------------------------------------------------------------------------------
   m.NewMemState(VIRTUAL_SOC_MEMORY, TOP_SLAVE_ADDR_IN_BITWIDTH, VIRTUAL_SOC_MEMORY_DATA_BITWIDTH);
   m.state(VIRTUAL_SOC_MEMORY).SetEntryNum(VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM);
+
+  // virtual memory for outputs
+  m.NewMemState(VIRTUAL_OUTPUT_MEMORY, TOP_SLAVE_ADDR_IN_BITWIDTH, VIRTUAL_OUTPUT_MEMORY_DATA_BITWIDTH);
+  m.state(VIRTUAL_OUTPUT_MEMORY).SetEntryNum(VIRTUAL_OUTPUT_MEMORY_ENTRY_NUM);
 }
 
 

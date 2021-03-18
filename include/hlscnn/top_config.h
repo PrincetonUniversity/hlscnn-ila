@@ -153,6 +153,12 @@ namespace hlscnn {
   #define VIRTUAL_SOC_MEMORY_ADDR_MIN 0x50000
   #define VIRTUAL_SOC_MEMORY_ADDR_MAX                                                  \
     (VIRTUAL_SOC_MEMORY_ADDR_MIN + VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM)
+
+  // define a virtual memory for reading the outputs
+  #define VIRTUAL_OUTPUT_MEMORY "virtual_output_memory"
+  // the output are activations, which are 16 bits in the HLSCNN
+  #define VIRTUAL_OUTPUT_MEMORY_DATA_BITWIDTH 16
+  #define VIRTUAL_OUTPUT_MEMORY_ENTRY_NUM 0X10000
    
 } // namespace hlscnn
 } // namespace ilang
