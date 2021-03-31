@@ -31,8 +31,9 @@ namespace ilang {
 namespace hlscnn {
 
 void DefineSPADInstr(Ila& m) {
-  // define config write instructions
+  // spad write/read input condition
   auto is_write = (m.input(TOP_SLAVE_IF_WR) & ~m.input(TOP_SLAVE_IF_RD));
+  auto is_read = (~m.input(TOP_SLAVE_IF_WR) & m.input(TOP_SLAVE_IF_RD));
   // masked address.
   // "Mask off the top 8 bits, which represent the device memory map
   // offset from the CPU.""
@@ -66,6 +67,48 @@ void DefineSPADInstr(Ila& m) {
                     BvConst(1, SPAD_CHILD_TARGET_BITWIDTH));
   }
 
+  // AXI read instructions for SPAD
+  { // read data from SPAD0
+    auto instr = m.NewInstr("SPAD0_DATA_RD");
+    auto is_spad0_addr = (masked_addr >= SPAD0_BASE_ADDR) & (masked_addr < SPAD1_BASE_ADDR);
+
+    instr.SetDecode(is_read & is_spad0_addr);
+
+    auto spad = m.state(SCRATCH_PAD_0);
+    auto spad_addr = masked_addr - SPAD0_BASE_ADDR;
+
+    auto vir_out_mem = m.state(VIRTUAL_OUTPUT_MEMORY);
+    auto vir_out_mem_next = vir_out_mem;
+    
+    for (auto i = 0; i < 8; i++) {
+      auto act_byte_1 = Load(spad, spad_addr + 2*i+1);
+      auto act_byte_0 = Load(spad, spad_addr + 2*i);
+      auto act = Concat(act_byte_1, act_byte_0);
+      vir_out_mem_next = Store(vir_out_mem_next, masked_addr + 2*i, act);
+    }
+    instr.SetUpdate(vir_out_mem, vir_out_mem_next);
+  }
+
+  { // read data from SPAD1
+    auto instr = m.NewInstr("SPAD1_DATA_RD");
+    auto is_spad1_addr = (masked_addr >= SPAD1_BASE_ADDR) & (masked_addr < MEM_ADDR_MAX);
+
+    instr.SetDecode(is_read & is_spad1_addr);
+
+    auto spad = m.state(SCRATCH_PAD_1);
+    auto spad_addr = masked_addr - SPAD1_BASE_ADDR;
+
+    auto vir_out_mem = m.state(VIRTUAL_OUTPUT_MEMORY);
+    auto vir_out_mem_next = vir_out_mem;
+
+    for (auto i = 0; i < 8; i++) {
+      auto act_byte_1 = Load(spad, spad_addr + 2*i+1);
+      auto act_byte_0 = Load(spad, spad_addr + 2*i);
+      auto act = Concat(act_byte_1, act_byte_0);
+      vir_out_mem_next = Store(vir_out_mem_next, masked_addr + 2*i, act);
+    }
+    instr.SetUpdate(vir_out_mem, vir_out_mem_next);
+  }
 }
 
 void DefineSPADInstrChild(Ila& m) {
@@ -87,7 +130,7 @@ void DefineSPADInstrChild(Ila& m) {
   
 
   { // child instructions for reading data from external memory to SPAD0
-    auto instr = child.NewInstr("spad_0_child_rd");
+    auto instr = child.NewInstr("spad_0_child_wr");
     instr.SetDecode(valid_flag == 1 & cntr < rd_wr_length & target == 0);
     
     // this part model the AXI master interface addr port
@@ -102,22 +145,9 @@ void DefineSPADInstrChild(Ila& m) {
 
     auto spad_next = spad;
 
-    spad_next = Store(spad_next, spad_addr + 0, Load(vir_mem, soc_mem_addr + 0));
-    spad_next = Store(spad_next, spad_addr + 1, Load(vir_mem, soc_mem_addr + 1));
-    spad_next = Store(spad_next, spad_addr + 2, Load(vir_mem, soc_mem_addr + 2));
-    spad_next = Store(spad_next, spad_addr + 3, Load(vir_mem, soc_mem_addr + 3));
-    spad_next = Store(spad_next, spad_addr + 4, Load(vir_mem, soc_mem_addr + 4));
-    spad_next = Store(spad_next, spad_addr + 5, Load(vir_mem, soc_mem_addr + 5));
-    spad_next = Store(spad_next, spad_addr + 6, Load(vir_mem, soc_mem_addr + 6));
-    spad_next = Store(spad_next, spad_addr + 7, Load(vir_mem, soc_mem_addr + 7));
-    spad_next = Store(spad_next, spad_addr + 8, Load(vir_mem, soc_mem_addr + 8));
-    spad_next = Store(spad_next, spad_addr + 9, Load(vir_mem, soc_mem_addr + 9));
-    spad_next = Store(spad_next, spad_addr + 10, Load(vir_mem, soc_mem_addr + 10));
-    spad_next = Store(spad_next, spad_addr + 11, Load(vir_mem, soc_mem_addr + 11));
-    spad_next = Store(spad_next, spad_addr + 12, Load(vir_mem, soc_mem_addr + 12));
-    spad_next = Store(spad_next, spad_addr + 13, Load(vir_mem, soc_mem_addr + 13));
-    spad_next = Store(spad_next, spad_addr + 14, Load(vir_mem, soc_mem_addr + 14));
-    spad_next = Store(spad_next, spad_addr + 15, Load(vir_mem, soc_mem_addr + 15));
+    for (auto i = 0; i < 16; i++) {
+      spad_next = Store(spad_next, spad_addr + i, Load(vir_mem, soc_mem_addr + i));
+    }
 
     instr.SetUpdate(spad, spad_next);
 
@@ -128,7 +158,7 @@ void DefineSPADInstrChild(Ila& m) {
   }
 
   { // child instruction for reading data from external memory to SPAD1
-    auto instr = child.NewInstr("spad_1_child_rd");
+    auto instr = child.NewInstr("spad_1_child_wr");
     instr.SetDecode(valid_flag == 1 & cntr < rd_wr_length & target == 0);
 
     // this part model the AXI master interface addr port
@@ -143,22 +173,9 @@ void DefineSPADInstrChild(Ila& m) {
 
     auto spad_next = spad;
 
-    spad_next = Store(spad_next, spad_addr + 0, Load(vir_mem, soc_mem_addr + 0));
-    spad_next = Store(spad_next, spad_addr + 1, Load(vir_mem, soc_mem_addr + 1));
-    spad_next = Store(spad_next, spad_addr + 2, Load(vir_mem, soc_mem_addr + 2));
-    spad_next = Store(spad_next, spad_addr + 3, Load(vir_mem, soc_mem_addr + 3));
-    spad_next = Store(spad_next, spad_addr + 4, Load(vir_mem, soc_mem_addr + 4));
-    spad_next = Store(spad_next, spad_addr + 5, Load(vir_mem, soc_mem_addr + 5));
-    spad_next = Store(spad_next, spad_addr + 6, Load(vir_mem, soc_mem_addr + 6));
-    spad_next = Store(spad_next, spad_addr + 7, Load(vir_mem, soc_mem_addr + 7));
-    spad_next = Store(spad_next, spad_addr + 8, Load(vir_mem, soc_mem_addr + 8));
-    spad_next = Store(spad_next, spad_addr + 9, Load(vir_mem, soc_mem_addr + 9));
-    spad_next = Store(spad_next, spad_addr + 10, Load(vir_mem, soc_mem_addr + 10));
-    spad_next = Store(spad_next, spad_addr + 11, Load(vir_mem, soc_mem_addr + 11));
-    spad_next = Store(spad_next, spad_addr + 12, Load(vir_mem, soc_mem_addr + 12));
-    spad_next = Store(spad_next, spad_addr + 13, Load(vir_mem, soc_mem_addr + 13));
-    spad_next = Store(spad_next, spad_addr + 14, Load(vir_mem, soc_mem_addr + 14));
-    spad_next = Store(spad_next, spad_addr + 15, Load(vir_mem, soc_mem_addr + 15));
+    for (auto i = 0; i < 16; i++) {
+      spad_next = Store(spad_next, spad_addr + i, Load(vir_mem, soc_mem_addr + i));
+    }
 
     instr.SetUpdate(spad, spad_next);
     // control signal
