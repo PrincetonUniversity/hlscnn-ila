@@ -2,3 +2,7 @@
 
 This is the ILA model of [HLSCNN](https://github.com/ttambe/HLSCNN_Accel) accelerator (all right reserved - Harvard University)
 
+*** important! ***
+This branch is based on a modified version of the HLSCNN design. Modifications include:
+- Expanding the scratchpad sizes
+- Grouping the output activation by CHANNEL_BLOCK_SIZE

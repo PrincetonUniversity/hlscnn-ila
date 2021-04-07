@@ -69,8 +69,11 @@ Ila GetHlscnnIla(const std::string& model_name) {
   DefineAccelConvChild(m);
   DefineSPADInstrChild(m);
 
-  ILA_INFO << "spad0 base addr: " << std::hex << SPAD0_BASE_ADDR;
-  ILA_INFO << "spad1 base addr: " << std::hex << SPAD1_BASE_ADDR;
+  ILA_INFO << "spad0 base addr: 0x" << std::hex << SPAD0_BASE_ADDR;
+  ILA_INFO << "spad1 base addr: 0x" << std::hex << SPAD1_BASE_ADDR;
+  ILA_INFO << "spad1 max addr: 0x" << std::hex << MEM_ADDR_MAX;
+  ILA_INFO << "vir_mem_base_addr: 0x" << std::hex << VIRTUAL_SOC_MEMORY_ADDR_MIN; 
+  ILA_INFO << "vir_mem max addr: 0x" << std::hex << VIRTUAL_SOC_MEMORY_ADDR_MAX; 
 
   return m;
 }
