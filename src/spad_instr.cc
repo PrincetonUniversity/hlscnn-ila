@@ -39,12 +39,15 @@ void DefineSPADInstr(Ila& m) {
   // offset from the CPU.""
   auto masked_addr = Concat(BvConst(0, 8), 
                             Extract(m.input(TOP_SLAVE_ADDR_IN), 23, 0));
+  auto not_vir_access = (m.input(VIRTUAL_SOC_ACCESS) == 0);
+  // For Simulation we need full address range for large dataset
+  // auto masked_addr = m.input(TOP_SLAVE_ADDR_IN);
 
   {// write data into SPAD0
     auto instr = m.NewInstr("SPAD0_DATA_WR");
     auto is_spad0_addr = (masked_addr >= SPAD0_BASE_ADDR) & (masked_addr < SPAD1_BASE_ADDR);
     
-    instr.SetDecode(is_write & is_spad0_addr);
+    instr.SetDecode(is_write & is_spad0_addr & not_vir_access);
     instr.SetUpdate(m.state(SPAD_CHILD_VALID_FLAG), 
                     BvConst(1, SPAD_CHILD_VALID_FLAG_BITWIDTH));
     instr.SetUpdate(m.state(SPAD_RD_WR_CNTR),
@@ -57,7 +60,7 @@ void DefineSPADInstr(Ila& m) {
     auto instr = m.NewInstr("SPAD1_DATA_WR");
     auto is_spad1_addr = (masked_addr >= SPAD1_BASE_ADDR) & (masked_addr < MEM_ADDR_MAX);
     
-    instr.SetDecode(is_write & is_spad1_addr);
+    instr.SetDecode(is_write & is_spad1_addr & not_vir_access);
 
     instr.SetUpdate(m.state(SPAD_CHILD_VALID_FLAG), 
                     BvConst(1, SPAD_CHILD_VALID_FLAG_BITWIDTH));
@@ -72,7 +75,7 @@ void DefineSPADInstr(Ila& m) {
     auto instr = m.NewInstr("SPAD0_DATA_RD");
     auto is_spad0_addr = (masked_addr >= SPAD0_BASE_ADDR) & (masked_addr < SPAD1_BASE_ADDR);
 
-    instr.SetDecode(is_read & is_spad0_addr);
+    instr.SetDecode(is_read & is_spad0_addr & not_vir_access);
 
     auto spad = m.state(SCRATCH_PAD_0);
     auto spad_addr = masked_addr - SPAD0_BASE_ADDR;
@@ -93,7 +96,7 @@ void DefineSPADInstr(Ila& m) {
     auto instr = m.NewInstr("SPAD1_DATA_RD");
     auto is_spad1_addr = (masked_addr >= SPAD1_BASE_ADDR) & (masked_addr < MEM_ADDR_MAX);
 
-    instr.SetDecode(is_read & is_spad1_addr);
+    instr.SetDecode(is_read & is_spad1_addr & not_vir_access);
 
     auto spad = m.state(SCRATCH_PAD_1);
     auto spad_addr = masked_addr - SPAD1_BASE_ADDR;
@@ -125,6 +128,8 @@ void DefineSPADInstrChild(Ila& m) {
   // offset from the CPU.""
   auto masked_addr = Concat(BvConst(0, 8), 
                             Extract(m.input(TOP_SLAVE_ADDR_IN), 23, 0));
+  // For Simulation we need full address range for large dataset
+  // auto masked_addr = m.input(TOP_SLAVE_ADDR_IN);
   auto soc_mem_addr = m.state(CFG_REG_SOC_MEM_BASE_ADDR);
   auto axi_addr_out = m.state(TOP_MASTER_RD_ADDR_OUT);
   

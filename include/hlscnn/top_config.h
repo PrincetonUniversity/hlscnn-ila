@@ -128,7 +128,9 @@ namespace hlscnn {
   // each memory bank should be 16-byte wide
   #define SPAD_NUM_BANK 4
   #define SPAD_DATA_BYTE_WIDTH 16
-  #define SPAD_CAPACITY (SPAD_NUM_BANK * 2048)
+  // #define SPAD_CAPACITY (SPAD_NUM_BANK * 2048)
+  // enlarge the SPAD for EfficientNet Simulation
+  #define SPAD_CAPACITY (SPAD_NUM_BANK * 0x1FF00)
   #define SPAD_BYTE_ENTRY_NUM (SPAD_CAPACITY * SPAD_DATA_BYTE_WIDTH)
 
   // base addr for configurations
@@ -147,10 +149,16 @@ namespace hlscnn {
   // This part is for abstracting the AXI master interface 
   // using an internal memory state to represent the SOC memory
   // ---------------------------------------------------------------
+  #define VIRTUAL_SOC_ACCESS "virtual_soc_access"
+  #define VIRTUAL_SOC_ACCESS_BITWIDTH 1 
+
   #define VIRTUAL_SOC_MEMORY "virtual_soc_memory"
   #define VIRTUAL_SOC_MEMORY_DATA_BITWIDTH 8
-  #define VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM 0x30000
-  #define VIRTUAL_SOC_MEMORY_ADDR_MIN 0x50000
+  // #define VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM 0x30000
+  // #define VIRTUAL_SOC_MEMORY_ADDR_MIN 0x50000
+  // #define VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM 0x20000000
+  #define VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM 0x10000000
+  #define VIRTUAL_SOC_MEMORY_ADDR_MIN 0
   #define VIRTUAL_SOC_MEMORY_ADDR_MAX                                                  \
     (VIRTUAL_SOC_MEMORY_ADDR_MIN + VIRTUAL_SOC_MEMORY_BYTE_ENTRY_NUM)
 

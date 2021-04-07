@@ -61,6 +61,9 @@ void DefineTopIO(Ila& m) {
   m.NewBvInput(TOP_SLAVE_DATA_IN_14, TOP_SLAVE_DATA_IN_BITWIDTH);
   m.NewBvInput(TOP_SLAVE_DATA_IN_15, TOP_SLAVE_DATA_IN_BITWIDTH);
 
+  // VIRTUAL_SOC_ACCESS
+  m.NewBvInput(VIRTUAL_SOC_ACCESS, VIRTUAL_SOC_ACCESS_BITWIDTH);
+
   /////////////////////////////////////////////////////////////////
   // Defining the master interface
   /////////////////////////////////////////////////////////////////

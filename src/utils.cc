@@ -79,7 +79,8 @@ void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name
   // offset from the CPU.""
   auto masked_addr = Concat(BvConst(0, 8), 
                             Extract(m.input(TOP_SLAVE_ADDR_IN), 23, 0));
-  auto is_config_addr = (masked_addr < SPAD0_BASE_ADDR);
+  auto not_vir_access = (m.input(VIRTUAL_SOC_ACCESS) == 0);
+  auto is_config_addr = (masked_addr < SPAD0_BASE_ADDR) & not_vir_access;
 
   // get the aligned data. Reg data is only 32 bit
 
