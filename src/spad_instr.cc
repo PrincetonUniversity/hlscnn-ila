@@ -159,7 +159,7 @@ void DefineSPADInstrChild(Ila& m) {
 
   { // child instruction for reading data from external memory to SPAD1
     auto instr = child.NewInstr("spad_1_child_wr");
-    instr.SetDecode(valid_flag == 1 & cntr < rd_wr_length & target == 0);
+    instr.SetDecode(valid_flag == 1 & cntr < rd_wr_length & target == 1);
 
     // this part model the AXI master interface addr port
     // assume the cntr*16 value wouldn't overflow
