@@ -40,7 +40,8 @@ void DefineVirMemInstr(Ila& m) {
     auto is_write = (m.input(TOP_SLAVE_IF_WR) & ~m.input(TOP_SLAVE_IF_RD));
     auto addr_valid = ((m.input(TOP_SLAVE_ADDR_IN) >= VIRTUAL_SOC_MEMORY_ADDR_MIN) &
                         (m.input(TOP_SLAVE_ADDR_IN) < VIRTUAL_SOC_MEMORY_ADDR_MAX));
-    instr.SetDecode(is_write & addr_valid);
+    auto is_vir_access = (m.input(VIRTUAL_SOC_ACCESS) == 1);
+    instr.SetDecode(is_write & addr_valid & is_vir_access);
 
     auto vir_mem = m.state(VIRTUAL_SOC_MEMORY);
     auto vir_mem_next = vir_mem;
