@@ -394,16 +394,21 @@ void DefineConvWeightFetch(Ila& child) {
 
     // TODO: this address should be vector level (128bit) address
     auto weight_req_addr = WtGetAddr(child, filter_idx, kern_row, kern_col, chan_block);
+
+    // Try changing the weight's bitwidth from 8bits to 16bits
     // update 08252020: The weight data is expanded, the address should cut in half;
-    auto spad_addr_base = weight_req_addr * (NIC_MEM_ELEM_BYTEWIDTH/2);
-    // auto spad_addr_base = weight_req_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    // auto spad_addr_base = weight_req_addr * (NIC_MEM_ELEM_BYTEWIDTH/2);
+    auto spad_addr_base = weight_req_addr * NIC_MEM_ELEM_BYTEWIDTH;
     auto spad0 = child.state(SCRATCH_PAD_0);
 
     // update 08252020: The weight data should be expand from 8bit to 16bit when reading
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
       auto wt_array_element = child.state(GetStateName(CONV_CHILD_WEIGHT_ARRAY, i));
-      auto wt_byte_0 = BvConst(0, SCRATCH_PAD_DATA_BITWIDTH);
-      auto wt_byte_1 = Load(spad0, spad_addr_base + i);
+      // auto wt_byte_0 = BvConst(0, SCRATCH_PAD_DATA_BITWIDTH);
+      // auto wt_byte_1 = Load(spad0, spad_addr_base + i);
+      auto wt_byte_0 = Load(spad0, spad_addr_base + 2*i);
+      auto wt_byte_1 = Load(spad0, spad_addr_base + 2*i + 1);
+
       instr.SetUpdate(wt_array_element, Concat(wt_byte_1, wt_byte_0));
     }
 
