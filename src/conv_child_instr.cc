@@ -328,7 +328,7 @@ void DefineConvWeightFetch(Ila& child) {
     
     // update 10282021: fixed the bound condition, should be last_kern_row - row_stride instead of last_kern_row - 1
     auto row_stride_ext = Concat(BvConst(0, 1), row_stride);
-    auto next_kern_row = Ite(kern_row >= last_kern_row_ext - row_stride_ext, 
+    auto next_kern_row = Ite(kern_row + row_stride_ext >= last_kern_row_ext, 
                              kern_row_init, kern_row + row_stride_ext);
 
     instr.SetUpdate(kern_row, next_kern_row);
@@ -341,13 +341,13 @@ void DefineConvWeightFetch(Ila& child) {
 
     // update the col fetch counter
     // fetch a new col only after this kernel job has been finished.
-    auto req_cntr_next = Ite(kern_row >= last_kern_row_ext - row_stride_ext, req_cntr + 1, req_cntr);
+    auto req_cntr_next = Ite(kern_row + row_stride_ext >= last_kern_row_ext, req_cntr + 1, req_cntr);
     instr.SetUpdate(req_cntr, req_cntr_next);
 
     // update 08232020: after incrementing row id, the next instr should be check_out_of_bound
     // instead of incrementing col num, which has been down in the previous instruction.
     auto next_state = 
-      Ite(kern_row >= last_kern_row_ext - row_stride_ext,
+      Ite(kern_row + row_stride_ext >= last_kern_row_ext,
         Ite(last_act_req,
             BvConst(CONV_CHILD_STATE_ACT_INPUT_COL, ACCEL_CONV_CHILD_STATE_BITWIDTH),
             BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH)),
@@ -365,10 +365,10 @@ void DefineConvWeightFetch(Ila& child) {
 
     // 10282021: Same fix on bound condition as above
     auto col_stride_ext = Concat(BvConst(0,1), col_stride);
-    auto next_kern_col = Ite(kern_col >= last_kern_col_ext - col_stride_ext,
+    auto next_kern_col = Ite(kern_col + col_stride_ext >= last_kern_col_ext,
                              kern_col_init, kern_col + col_stride_ext);
     auto next_state =
-      Ite(kern_col >= last_kern_col_ext - col_stride_ext,
+      Ite(kern_col + col_stride_ext >= last_kern_col_ext,
           BvConst(CONV_CHILD_STATE_WEIGHT_ROW_FETCH, ACCEL_CONV_CHILD_STATE_BITWIDTH),
           BvConst(CONV_CHILD_STATE_WEIGHT_CHECK_BOUND, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
