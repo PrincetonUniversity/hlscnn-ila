@@ -382,8 +382,14 @@ void DefineConvWeightFetch(Ila& child) {
 
     auto is_out_of_bound = conv_out_of_bound(child, act_row, act_col, kern_row, kern_col);
 
+    // 11012021: Check whether the intial kernel row/col id is larger than limit
+    auto last_kern_col = Concat(BvConst(0, 1), child.state(CONV_KERNEL_COL_NUM));
+    auto last_kern_row = Concat(BvConst(0, 1), child.state(CONV_KERNEL_ROW_NUM));
+    // flag is true when the inital kernel idx is larger than the kernel size
+    auto check_kernel_init_value = (kern_row >= last_kern_row) & (kern_col >= last_kern_col);
+
     auto next_state = 
-      Ite(is_out_of_bound, 
+      Ite(is_out_of_bound | check_kernel_init_value, 
         BvConst(CONV_CHILD_STATE_WEIGHT_COL_FETCH, ACCEL_CONV_CHILD_STATE_BITWIDTH),
         BvConst(CONV_CHILD_STATE_WEIGHT_SEND_DP, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
