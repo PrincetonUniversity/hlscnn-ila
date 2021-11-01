@@ -386,7 +386,7 @@ void DefineConvWeightFetch(Ila& child) {
     auto last_kern_col = Concat(BvConst(0, 1), child.state(CONV_KERNEL_COL_NUM));
     auto last_kern_row = Concat(BvConst(0, 1), child.state(CONV_KERNEL_ROW_NUM));
     // flag is true when the inital kernel idx is larger than the kernel size
-    auto check_kernel_init_value = (kern_row >= last_kern_row) & (kern_col >= last_kern_col);
+    auto check_kernel_init_value = (kern_row >= last_kern_row) | (kern_col >= last_kern_col);
 
     auto next_state = 
       Ite(is_out_of_bound | check_kernel_init_value, 
