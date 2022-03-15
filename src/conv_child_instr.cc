@@ -70,9 +70,6 @@ void DefineAccelConvChild(Ila& m) {
     // oact array
     auto oact_v_name = GetStateName(CONV_CHILD_O_ACT_ARRAY, i);
     child.NewBvState(oact_v_name, CONV_CHILD_O_ACT_ARRAY_BITWIDTH);
-    // out array
-    auto out_v_name = GetStateName(CONV_CHILD_OUT_ARRAY, i);
-    child.NewBvState(out_v_name, CONV_CHILD_OUT_ARRAY_BITWIDTH);
   }
   
   // Declare child instructions, seperating activation fetching, weigth fetching 
@@ -109,11 +106,6 @@ void DefineConvActFetch(Ila& child) {
     //TODO: at the start, the next state should directly jump to the weight fetching!
     auto next_state = BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
-    // reset the out_array
-    for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
-      instr.SetUpdate(child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i)), 
-                      BvConst(0, CONV_CHILD_OUT_ARRAY_BITWIDTH));
-    }
     
     instr.SetUpdate(state, next_state);
   }
@@ -458,7 +450,6 @@ void DefineConvDatapath(Ila& child) {
     auto k_col = child.state(CONV_CHILD_KERNEL_COL_ID);
     auto act_filter_id = child.state(CONV_CHILD_FILTER_ID);
     
-    //TODO: this address should be vector level address (128bit)
     auto oactfetch_addr = OutActGetAddr(child, act_row, act_col, k_row, k_col, act_filter_id);
     auto spad1_base_addr = oactfetch_addr * NIC_MEM_ELEM_BYTEWIDTH;
     auto spad1 = child.state(SCRATCH_PAD_1);
@@ -490,8 +481,9 @@ void DefineConvDatapath(Ila& child) {
     auto is_first_psum = (wbk_row==0) & (wbk_col==0) & (wbact_chblk==0);
     auto en_accum = child.state(CONV_ENABLE_ACCUM);
 
-    auto ofilter_idx = child.state(CONV_OFILTER_IDX);
-    auto wbact_idx = URem(ofilter_idx - 1, BvConst(CONV_VECTOR_SIZE, ofilter_idx.bit_width()));
+    // auto ofilter_idx = child.state(CONV_OFILTER_IDX);
+    auto ofilter_idx = child.state(CONV_CHILD_FILTER_ID);
+    auto wbact_idx = URem(ofilter_idx, BvConst(CONV_VECTOR_SIZE, ofilter_idx.bit_width()));
     auto oact_element = GetActVectorState(child, CONV_CHILD_O_ACT_ARRAY, wbact_idx);
 
     // oact_out is 32 bit
@@ -517,7 +509,7 @@ void DefineConvDatapath(Ila& child) {
 
     // ------------------------------------------------------------------
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
-      auto out_element = child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i));
+      auto out_element = child.state(GetStateName(CONV_CHILD_O_ACT_ARRAY, i));
       auto out_element_next = Ite(wbact_idx == i, oact_out_act, out_element);
       instr.SetUpdate(out_element, out_element_next);
     }
@@ -536,14 +528,13 @@ void DefineConvDatapath(Ila& child) {
     auto k_col = child.state(CONV_CHILD_KERNEL_COL_ID);
     auto act_filter_id = child.state(CONV_CHILD_FILTER_ID);
     
-    //TODO: this address should be vector level address (128bit)
     auto out_addr = OutActGetAddr(child, act_row, act_col, k_row, k_col, act_filter_id);
     auto spad1_base_addr = out_addr * NIC_MEM_ELEM_BYTEWIDTH;
     auto spad1 = child.state(SCRATCH_PAD_1);
     auto spad1_next = spad1;
 
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
-      auto out_element = child.state(GetStateName(CONV_CHILD_OUT_ARRAY, i));
+      auto out_element = child.state(GetStateName(CONV_CHILD_O_ACT_ARRAY, i));
       auto out_byte_0 = Extract(out_element, 7, 0);
       auto out_byte_1 = Extract(out_element, 15, 8);
       spad1_next = Store(spad1_next, spad1_base_addr + 2*i, out_byte_0);

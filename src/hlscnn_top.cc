@@ -58,7 +58,6 @@ Ila GetHlscnnIla(const std::string& model_name) {
   auto valid_addr = (m.input(TOP_SLAVE_ADDR_IN) <= ADDR_IN_MAX);
   m.SetValid(valid_req & valid_addr);
 
-
   // Define Instructions
   DefineConfigInstr(m);
   DefineSPADInstr(m);
@@ -71,24 +70,7 @@ Ila GetHlscnnIla(const std::string& model_name) {
   DefineSPADInstrChild(m);
 
   ILA_INFO << "spad0 base addr: " << std::hex << SPAD0_BASE_ADDR;
-  ILA_INFO << "spad1 base addr: " << std::hex << SPAD1_BASE_ADDR;  
-
-  // // redundant uninterpreted functions for debug
-  // m.NewBvState("debug_temp", ACT_TOTAL_BITWIDTH);
-  // {
-  //   auto instr = m.NewInstr("debug_uf");
-  //   instr.SetDecode(BoolConst(false));
-  //   auto wt_temp = BvConst(1, WEIGHT_TOTAL_BITWIDTH);
-  //   auto psum_temp = BvConst(1, PSUM_TOTAL_BITWIDTH);
-  //   auto act_temp = BvConst(1, ACT_TOTAL_BITWIDTH);
-
-  //   auto tmp = ConvMacPsumMul(wt_temp, wt_temp);
-  //   tmp = Psum2Act(tmp);
-  //   tmp = ActAdd(tmp, tmp);
-  //   tmp = ActRelu(tmp);
-  //   instr.SetUpdate(m.state("debug_temp"), tmp);
-  // }
-
+  ILA_INFO << "spad1 base addr: " << std::hex << SPAD1_BASE_ADDR;
 
   return m;
 }

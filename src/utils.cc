@@ -240,7 +240,10 @@ ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
   auto input_col_ext = Concat(BvConst(0, ext_bitwidth-input_col.bit_width()), input_col);
   auto k_row_ext = Concat(BvConst(0, ext_bitwidth-k_row.bit_width()), k_row);
   auto k_col_ext = Concat(BvConst(0, ext_bitwidth-k_col.bit_width()), k_col);
+  
   auto filter_idx_ext = Concat(BvConst(0, ext_bitwidth-filter_idx.bit_width()), filter_idx);
+  auto out_chan_block_id = filter_idx_ext / BvConst(CHANNEL_BLOCK_SIZE, ext_bitwidth);
+
 
   auto last_kernel_row_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_row.bit_width()), 
                                     last_kernel_row);
@@ -252,9 +255,11 @@ ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
   auto out_row = input_row_ext - k_row_ext + last_kernel_row_ext/BvConst(2, ext_bitwidth);
   auto out_col = input_col_ext - k_col_ext + last_kernel_col_ext/BvConst(2, ext_bitwidth);
 
+  // TODO: grouping the output results by channel block
+  // need to replace the filter_id here with the output filter channel block id
   auto out_act_addr = 
         (
-          (filter_idx_ext * last_row_ext * last_col_ext * CHANNEL_BLOCK_SIZE) +
+          (out_chan_block_id * last_row_ext * last_col_ext * CHANNEL_BLOCK_SIZE) +
           out_row * (last_col_ext * CHANNEL_BLOCK_SIZE) +
           out_col * CHANNEL_BLOCK_SIZE
         ) * (ACT_TOTAL_BITWIDTH/8) / BvConst(NIC_MEM_ELEM_BYTEWIDTH, ext_bitwidth);
