@@ -109,8 +109,6 @@ void SetConfigRegWrInstr(Ila& m, const int& reg_idx, const std::string& reg_name
 ExprRef act_gen_get_addr(const Ila& child, const ExprRef& in_row,
                                             const ExprRef& in_col,
                                             const ExprRef& chan_block_idx) {
-//channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
-// + in_row*(input_cols*CHANNEL_BLOCK_SIZE) + in_col*CHANNEL_BLOCK_SIZE)*(ACTIVATION_TOT_WIDTH/8);
   auto base_addr = child.state(CFG_REG_ACCEL_CONV_ACT_BASE_ADDR);
   auto in_row_ext = Concat(BvConst(0,32-in_row.bit_width()), in_row);
   auto in_col_ext = Concat(BvConst(0,32-in_col.bit_width()), in_col);
@@ -138,19 +136,14 @@ ExprRef conv_out_of_bound(const Ila& child, const ExprRef& input_row,
                                                    const ExprRef& k_col)
 {
   // implement the out_of_bound member function
-  // virtual bool out_of_bound(unsigned input_row, unsigned input_col, unsigned k_row, unsigned k_col) {
-	// 	signed out_row = input_row + ((last_kern_row/2) - k_row);
-	// 	signed out_col = input_col + ((last_kern_col/2) - k_col);
-	// 	bool   idx_out_of_bound = false;
-	// 	if((out_row >= last_row) || (out_col >= last_col) || (out_row < 0) || (out_col < 0) ) {
-	// 		idx_out_of_bound = true;
-	// 	}
-	// 	return idx_out_of_bound;
-	// }
   auto last_kernel_row = child.state(CONV_KERNEL_ROW_NUM);
   auto last_kernel_col = child.state(CONV_KERNEL_COL_NUM);
-  auto last_row = child.state(CONV_INPUT_ROW_NUM);
-  auto last_col = child.state(CONV_INPUT_COL_NUM);
+  auto last_row = child.state(CONV_OUTPUT_ROW_NUM);
+  auto last_col = child.state(CONV_OUTPUT_COL_NUM); 
+  auto k_stride_r = child.state(CONV_KERNEL_R_STRIDE);
+  auto k_stride_c = child.state(CONV_KERNEL_C_STRIDE);
+  auto out_row = child.state(CONV_OUTPUT_ROW_NUM);
+  auto out_col = child.state(CONV_OUTPUT_COL_NUM);
 
   // input_row and input_col have the largest bit-width
   auto ext_bitwidth = input_row.bit_width();
@@ -163,18 +156,19 @@ ExprRef conv_out_of_bound(const Ila& child, const ExprRef& input_row,
                                     last_kernel_col);
   auto last_row_ext = Concat(BvConst(0, ext_bitwidth-last_row.bit_width()), last_row);
   auto last_col_ext = Concat(BvConst(0, ext_bitwidth-last_col.bit_width()), last_col);
+  auto k_stride_r_ext = Concat(BvConst(0, ext_bitwidth-k_stride_r.bit_width()), k_stride_r);
+  auto k_stride_c_ext = Concat(BvConst(0, ext_bitwidth-k_stride_c.bit_width()), k_stride_c);
+  
   auto k_row_ext = Concat(BvConst(0, ext_bitwidth-k_row.bit_width()), k_row);
   auto k_col_ext = Concat(BvConst(0, ext_bitwidth-k_col.bit_width()), k_col);
+  auto out_row_ext = Concat(BvConst(0, ext_bitwidth-out_row.bit_width()), out_row);
+  auto out_col_ext = Concat(BvConst(0, ext_bitwidth-out_col.bit_width()), out_col);
 
-  auto cond_0 = 
-        ((input_row + last_kernel_row_ext / BvConst(2,ext_bitwidth) - k_row_ext) >= last_row_ext);
-  auto cond_1 = 
-        ((input_col + last_kernel_col_ext / BvConst(2,ext_bitwidth) - k_col_ext) >= last_col_ext);
-  auto cond_2 = 
-        ((input_row + last_kernel_row_ext / BvConst(2,ext_bitwidth)) < k_row_ext);
-  auto cond_3 = 
-        ((input_col + last_kernel_col_ext / BvConst(2,ext_bitwidth)) < k_col_ext);
-  
+  auto cond_0 = ((input_row - k_row_ext) / k_stride_r_ext >= last_row_ext);
+  auto cond_1 = ((input_col - k_col_ext) / k_stride_c_ext >= last_col_ext);
+  auto cond_2 = (input_row < k_row_ext);
+  auto cond_3 = (input_col < k_col_ext);
+ 
   auto is_out_of_bound = cond_0 | cond_1 | cond_2 | cond_3;
 
   return is_out_of_bound;
@@ -229,8 +223,10 @@ ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
 {
   auto last_kernel_row = child.state(CONV_KERNEL_ROW_NUM);
   auto last_kernel_col = child.state(CONV_KERNEL_COL_NUM);
-  auto last_row = child.state(CONV_INPUT_ROW_NUM);
-  auto last_col = child.state(CONV_INPUT_COL_NUM);
+  auto last_row = child.state(CONV_OUTPUT_ROW_NUM);
+  auto last_col = child.state(CONV_OUTPUT_COL_NUM);
+  auto row_stride = child.state(CONV_KERNEL_R_STRIDE);
+  auto col_stride = child.state(CONV_KERNEL_C_STRIDE);
 
   auto base_addr = child.state(CONV_SPAD_OUTPUT_BASE);
   // extend bitwidth to spad addr bitwidth (32)
@@ -244,19 +240,18 @@ ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
   auto filter_idx_ext = Concat(BvConst(0, ext_bitwidth-filter_idx.bit_width()), filter_idx);
   auto out_chan_block_id = filter_idx_ext / BvConst(CHANNEL_BLOCK_SIZE, ext_bitwidth);
 
-
   auto last_kernel_row_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_row.bit_width()), 
                                     last_kernel_row);
   auto last_kernel_col_ext = Concat(BvConst(0, ext_bitwidth-last_kernel_col.bit_width()),
                                     last_kernel_col);
   auto last_row_ext = Concat(BvConst(0, ext_bitwidth-last_row.bit_width()), last_row);
   auto last_col_ext = Concat(BvConst(0, ext_bitwidth-last_col.bit_width()), last_col);
+  auto row_stride_ext = Concat(BvConst(0, ext_bitwidth-row_stride.bit_width()), row_stride);
+  auto col_stride_ext = Concat(BvConst(0, ext_bitwidth-col_stride.bit_width()), col_stride);
 
-  auto out_row = input_row_ext - k_row_ext + last_kernel_row_ext/BvConst(2, ext_bitwidth);
-  auto out_col = input_col_ext - k_col_ext + last_kernel_col_ext/BvConst(2, ext_bitwidth);
+  auto out_row = (input_row_ext - k_row_ext) / row_stride_ext;
+  auto out_col = (input_col_ext - k_col_ext) / col_stride_ext;
 
-  // TODO: grouping the output results by channel block
-  // need to replace the filter_id here with the output filter channel block id
   auto out_act_addr = 
         (
           (out_chan_block_id * last_row_ext * last_col_ext * CHANNEL_BLOCK_SIZE) +
