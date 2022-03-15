@@ -157,18 +157,6 @@ namespace hlscnn {
 
 #define CONV_CHILD_O_ACT_ARRAY_BITWIDTH ACT_TOTAL_BITWIDTH
 
-#define CONV_CHILD_OUT_ARRAY "conv_child_out_array"
-#define CONV_CHILD_OUT_ARRAY_0 "conv_child_out_array_0"
-#define CONV_CHILD_OUT_ARRAY_1 "conv_child_out_array_1"
-#define CONV_CHILD_OUT_ARRAY_2 "conv_child_out_array_2"
-#define CONV_CHILD_OUT_ARRAY_3 "conv_child_out_array_3"
-#define CONV_CHILD_OUT_ARRAY_4 "conv_child_out_array_4"
-#define CONV_CHILD_OUT_ARRAY_5 "conv_child_out_array_5"
-#define CONV_CHILD_OUT_ARRAY_6 "conv_child_out_array_6"
-#define CONV_CHILD_OUT_ARRAY_7 "conv_child_out_array_7"
-
-#define CONV_CHILD_OUT_ARRAY_BITWIDTH ACT_TOTAL_BITWIDTH
-
 #define CONV_CHILD_MAC_PSUM "conv_child_mac_psum"
 #define CONV_CHILD_MAC_PSUM_BITWIDTH PSUM_TOTAL_BITWIDTH
 
