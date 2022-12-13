@@ -7,3 +7,4 @@ This branch is based on a modified version of the HLSCNN design. Modifications i
 - Expanding the scratchpad sizes
 - Grouping the output activation by CHANNEL_BLOCK_SIZE
 - Correct output activation indexing
+- Expanding the weight bitwidth from 8bit to 16bit
