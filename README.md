@@ -8,3 +8,4 @@ This branch is based on a modified version of the HLSCNN design. Modifications i
 - Grouping the output activation by CHANNEL_BLOCK_SIZE
 - Correct output activation indexing
 - Expanding the weight bitwidth from 8bit to 16bit
+- Use the spad0 for holding both input and output activations

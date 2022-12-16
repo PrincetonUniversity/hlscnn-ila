@@ -123,10 +123,13 @@ ExprRef act_gen_get_addr(const Ila& child, const ExprRef& in_row,
   auto input_cols_ext = Concat(BvConst(0, 32-CONV_INPUT_COL_NUM_BITWIDTH),
                                 child.state(CONV_INPUT_COL_NUM));
 
-  auto act_addr = base_addr + 
-                  ((chan_block_ext * input_rows_ext * input_cols_ext * chan_block_size) +
+  // change the input activation address format into the same as the other spad address format
+  // return a byte level address instead of a vector level since the base_addr is byte level
+  auto act_addr = base_addr + (
+                    (chan_block_ext * input_rows_ext * input_cols_ext * chan_block_size) +
                     in_row_ext * (input_cols_ext * chan_block_size) +
-                    in_col_ext * chan_block_size) * (ACT_TOTAL_BITWIDTH/8);
+                    in_col_ext * chan_block_size
+                  ) * (ACT_TOTAL_BITWIDTH/8);
   
   return act_addr;
 }
@@ -205,7 +208,8 @@ ExprRef WtGetAddr(const Ila& child, const ExprRef& filter_id,
 
   auto last_chan_block_ext = Concat(BvConst(0, 32-last_chan_block.bit_width()), last_chan_block);
 
-  // update 08242020: no need to add the base address for ILA mem access.
+  // unlike get addr for activations, weight address still returns a vector level address to support
+  // 8bit weight data type
   auto addr = (
     (filter_id_ext * kernel_rows_ext * kernel_cols_ext * last_chan_block_ext * CHANNEL_BLOCK_SIZE) +
     (chan_block_ext * kernel_rows_ext * kernel_cols_ext * CHANNEL_BLOCK_SIZE) +
@@ -253,12 +257,12 @@ ExprRef OutActGetAddr(const Ila& child, const ExprRef& input_row,
   auto out_row = (input_row_ext - k_row_ext) / row_stride_ext;
   auto out_col = (input_col_ext - k_col_ext) / col_stride_ext;
 
-  auto out_act_addr = 
-        (
+  // directly return a byte-level address since base_addr is byte-level
+  auto out_act_addr = base_addr + (
           (out_chan_block_id * last_row_ext * last_col_ext * CHANNEL_BLOCK_SIZE) +
           out_row * (last_col_ext * CHANNEL_BLOCK_SIZE) +
           out_col * CHANNEL_BLOCK_SIZE
-        ) * (ACT_TOTAL_BITWIDTH/8) / BvConst(NIC_MEM_ELEM_BYTEWIDTH, ext_bitwidth);
+        ) * (ACT_TOTAL_BITWIDTH/8);
 
   return out_act_addr;
 }

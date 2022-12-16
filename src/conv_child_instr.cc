@@ -57,9 +57,6 @@ void DefineAccelConvChild(Ila& m) {
 
   child.NewBvState(CONV_CHILD_ACTIVATION_PSUM, CONV_CHILD_ACTIVATION_PSUM_BITWIDTH);
   
-  child.NewBvState(CONV_CHILD_ACT_REQ_LENGTH, CONV_CHILD_ACT_REQ_LENGTH_BITWIDTH);
-  child.NewBvState(CONV_CHILD_ACT_FETCH_CNTR, CONV_CHILD_ACT_FETCH_CNTR_BITWIDTH);
-  
   for (int i = 0; i < CONV_VECTOR_SIZE; i++) {
     // act array
     auto act_v_name = GetStateName(CONV_CHILD_ACT_ARRAY, i);
@@ -90,7 +87,6 @@ void DefineConvActFetch(Ila& child) {
   auto chan_block = child.state(CONV_CHILD_CHAN_BLOCK_ID);
   auto input_row = child.state(CONV_CHILD_INPUT_ROW_ID);
   auto input_col = child.state(CONV_CHILD_INPUT_COL_ID);
-  auto input_col_loop = child.state(CONV_CHILD_INPUT_COL_ID_LOOP);
 
   { // instr ---- start Activation fetching
     // initilizting the loop parameter, setting them to zero, thus the next state should
@@ -101,10 +97,9 @@ void DefineConvActFetch(Ila& child) {
     instr.SetUpdate(filter_idx, BvConst(0, CONV_CHILD_FILTER_ID_BITWIDTH));
     instr.SetUpdate(chan_block, BvConst(0, CONV_CHILD_CHAN_BLOCK_ID_BITWIDTH));
     instr.SetUpdate(input_row, BvConst(0, CONV_CHILD_INPUT_ROW_ID_BITWIDTH));
-    instr.SetUpdate(input_col_loop, BvConst(0, CONV_CHILD_INPUT_COL_ID_LOOP_BITWIDTH));
-
-    //TODO: at the start, the next state should directly jump to the weight fetching!
-    auto next_state = BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN,
+    instr.SetUpdate(input_col, BvConst(0, CONV_CHILD_INPUT_COL_ID_BITWIDTH));
+    // skip the increment of iterator, and jump to the activation fetching
+    auto next_state = BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT,
                               ACCEL_CONV_CHILD_STATE_BITWIDTH);
     
     instr.SetUpdate(state, next_state);
@@ -135,7 +130,7 @@ void DefineConvActFetch(Ila& child) {
     auto next_state = 
       Ite(filter_idx >= num_filters_ext - 1,
             BvConst(CONV_CHILD_STATE_DONE, ACCEL_CONV_CHILD_STATE_BITWIDTH),
-            BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN, ACCEL_CONV_CHILD_STATE_BITWIDTH));
+            BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
     instr.SetUpdate(filter_idx, next_filter_id);
     instr.SetUpdate(state, next_state);
@@ -162,7 +157,7 @@ void DefineConvActFetch(Ila& child) {
     auto next_state = 
       Ite(chan_block >= last_chan_blk_ext - 1,
           BvConst(CONV_CHILD_STATE_ACT_FILTER_ID, ACCEL_CONV_CHILD_STATE_BITWIDTH),
-          BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN, ACCEL_CONV_CHILD_STATE_BITWIDTH));
+          BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH));
   
     instr.SetUpdate(chan_block, next_chan_block);
     instr.SetUpdate(state, next_state);
@@ -184,85 +179,48 @@ void DefineConvActFetch(Ila& child) {
     auto next_state = 
       Ite(input_row >= last_row_ext - 1,
           BvConst(CONV_CHILD_STATE_ACT_INPUT_CHANNEL_BLOCK, ACCEL_CONV_CHILD_STATE_BITWIDTH),
-          BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN, ACCEL_CONV_CHILD_STATE_BITWIDTH));
+          BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH));
     
     instr.SetUpdate(input_row, next_input_row);
     instr.SetUpdate(state, next_state);
   }
 
   { // instr ---- incrementing input col
-    auto instr = child.NewInstr("accel_conv_child_act_input_col_loop_id");
+    auto instr = child.NewInstr("accel_conv_child_act_input_col_id");
     instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_INPUT_COL));
 
     auto last_col = child.state(CONV_INPUT_COL_NUM);
-    auto last_col_ext = Concat(BvConst(0, input_col_loop.bit_width() - last_col.bit_width()),
+    auto last_col_ext = Concat(BvConst(0, input_col.bit_width() - last_col.bit_width()),
                                 last_col);
-    auto req_len = child.state(CONV_CHILD_ACT_REQ_LENGTH);
-
-    // the end condition should be last_cot_ext - req_len
-    // "-1" is only for doing one-time job each time incrementing the param
-    auto next_input_col_loop = 
-      Ite(input_col_loop >= last_col_ext - req_len,
-          BvConst(0, input_col_loop.bit_width()), input_col_loop + req_len);
-    
+    auto col_stride = 1;
+    auto next_input_col = Ite(input_col >= last_col_ext - 1,
+                              BvConst(0, input_col.bit_width()), input_col + col_stride);
     auto next_state = 
-      Ite(input_col_loop >= last_col_ext - req_len,
+      Ite(input_col >= last_col_ext - 1,
           BvConst(CONV_CHILD_STATE_ACT_INPUT_ROW, ACCEL_CONV_CHILD_STATE_BITWIDTH),
-          BvConst(CONV_CHILD_STATE_ACT_SET_REQ_LEN, ACCEL_CONV_CHILD_STATE_BITWIDTH));
+          BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
-    instr.SetUpdate(input_col_loop, next_input_col_loop);
+    instr.SetUpdate(input_col, next_input_col);
     instr.SetUpdate(state, next_state);
   }
 
-  { // instr ---- setting act request length
-    auto instr = child.NewInstr("accel_conv_child_act_set_req_length");
-    instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_SET_REQ_LEN));
-
-    auto last_col = child.state(CONV_INPUT_COL_NUM);
-    auto last_col_ext = Concat(BvConst(0, 1), last_col);
-    auto col_remain = last_col_ext - input_col_loop;
-
-    auto req_len = child.state(CONV_CHILD_ACT_REQ_LENGTH);
-    auto act_fetch_cntr = child.state(CONV_CHILD_ACT_FETCH_CNTR);
-
-    auto req_len_next = Ite(col_remain > CONV_BURST_LENGTH,
-                            BvConst(CONV_BURST_LENGTH, CONV_CHILD_ACT_REQ_LENGTH_BITWIDTH),
-                            col_remain);
-    auto act_fetch_cntr_next = BvConst(0, CONV_CHILD_ACT_FETCH_CNTR_BITWIDTH);
-    
-    instr.SetUpdate(req_len, req_len_next);
-    instr.SetUpdate(act_fetch_cntr, act_fetch_cntr_next);
-
-    auto next_state = BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT,
-                              ACCEL_CONV_CHILD_STATE_BITWIDTH);
-    
-    instr.SetUpdate(state, next_state);
-  }
-
-  { // instr ---- fetching activations from external memory
-    // Use an internal memory to simulate the external memory
+  { // instr ---- fetching activations from spad1
     auto instr = child.NewInstr("accel_conv_child_act_fetch_activations");
     instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_ACT_FETCH_ACT));
 
-    auto cntr = child.state(CONV_CHILD_ACT_FETCH_CNTR);
-    // update 08232020: the real input_col id is here
-    auto input_col_next = input_col_loop + cntr;
-    instr.SetUpdate(input_col, input_col_next);
+    /* Modification for a unifed spad for both input and output activations:
+       remove the HLSCNN master axi interface for fetching data from external memory
+       required input data should already be in spad1 for computation
+    */
+    // this is a byte level address
+    auto act_addr = act_gen_get_addr(child, input_row, input_col, chan_block);
+    auto spad_addr = act_addr - SPAD1_BASE_ADDR;
+    auto spad1 = child.state(SCRATCH_PAD_1);
 
-    // fetch the activation from internal memory
-    //channel_block_address = base_addr + ((channel_block_idx*input_rows*input_cols*CHANNEL_BLOCK_SIZE) 
-    // + in_row*(input_cols*CHANNEL_BLOCK_SIZE) + in_col*CHANNEL_BLOCK_SIZE)*(ACTIVATION_TOT_WIDTH/8);
-    auto act_addr = act_gen_get_addr(child, input_row, input_col_next, chan_block);
-    instr.SetUpdate(child.state(TOP_MASTER_RD_ADDR_OUT), act_addr);
-
-    auto vir_mem = child.state(VIRTUAL_SOC_MEMORY);
-    // for vir memory access no need to add the activation base
-    // TODO: Revert the subtraction of activation base value here
-    // act_addr = act_addr - child.state(CONV_ACT_BASE);
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
       auto elem = child.state(GetStateName(CONV_CHILD_ACT_ARRAY, i));
-      auto act_byte_0 = Load(vir_mem, act_addr + 2*i);
-      auto act_byte_1 = Load(vir_mem, act_addr + 2*i + 1);
+      auto act_byte_0 = Load(spad1, spad_addr + 2*i);
+      auto act_byte_1 = Load(spad1, spad_addr + 2*i + 1);
       instr.SetUpdate(elem, Concat(act_byte_1, act_byte_0));
     }
     
@@ -325,25 +283,12 @@ void DefineConvWeightFetch(Ila& child) {
 
     instr.SetUpdate(kern_row, next_kern_row);
 
-    // update 08172020: next state update
-    auto req_cntr = child.state(CONV_CHILD_ACT_FETCH_CNTR);
-    auto req_len = Extract(child.state(CONV_CHILD_ACT_REQ_LENGTH), 
-                            req_cntr.bit_width() - 1, 0);
-    auto last_act_req = (req_cntr >= req_len - 1);
-
-    // update the col fetch counter
-    // fetch a new col only after this kernel job has been finished.
-    auto req_cntr_next = Ite(kern_row + row_stride_ext >= last_kern_row_ext, req_cntr + 1, req_cntr);
-    instr.SetUpdate(req_cntr, req_cntr_next);
-
     // update 08232020: after incrementing row id, the next instr should be check_out_of_bound
     // instead of incrementing col num, which has been down in the previous instruction.
     auto next_state = 
       Ite(kern_row + row_stride_ext >= last_kern_row_ext,
-        Ite(last_act_req,
-            BvConst(CONV_CHILD_STATE_ACT_INPUT_COL, ACCEL_CONV_CHILD_STATE_BITWIDTH),
-            BvConst(CONV_CHILD_STATE_ACT_FETCH_ACT, ACCEL_CONV_CHILD_STATE_BITWIDTH)),
-        BvConst(CONV_CHILD_STATE_WEIGHT_CHECK_BOUND, ACCEL_CONV_CHILD_STATE_BITWIDTH));
+          BvConst(CONV_CHILD_STATE_ACT_INPUT_COL, ACCEL_CONV_CHILD_STATE_BITWIDTH),
+          BvConst(CONV_CHILD_STATE_WEIGHT_CHECK_BOUND, ACCEL_CONV_CHILD_STATE_BITWIDTH));
 
     instr.SetUpdate(state, next_state);
   }
@@ -392,13 +337,17 @@ void DefineConvWeightFetch(Ila& child) {
     auto instr = child.NewInstr("accel_conv_send_dp");
     instr.SetDecode(is_child_valid & (state == CONV_CHILD_STATE_WEIGHT_SEND_DP));
 
-    // TODO: this address should be vector level (128bit) address
+    // this address should be vector level (128bit) address
+    // unlike get addr for activation, weight address still remain vector level to support
+    // 8-bit datatype
+    auto base_addr = child.state(CONV_WEIGHT_BASE);
     auto weight_req_addr = WtGetAddr(child, filter_idx, kern_row, kern_col, chan_block);
 
     // Try changing the weight's bitwidth from 8bits to 16bits
     // update 08252020: The weight data is expanded, the address should cut in half;
     // auto spad_addr_base = weight_req_addr * (NIC_MEM_ELEM_BYTEWIDTH/2);
-    auto spad_addr_base = weight_req_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    /* Move the base addr addition here to support different bitwidth of weight data */
+    auto spad_addr_base = base_addr + weight_req_addr * NIC_MEM_ELEM_BYTEWIDTH - SPAD0_BASE_ADDR;
     auto spad0 = child.state(SCRATCH_PAD_0);
 
     // update 08252020: The weight data should be expand from 8bit to 16bit when reading
@@ -456,7 +405,8 @@ void DefineConvDatapath(Ila& child) {
     auto act_filter_id = child.state(CONV_CHILD_FILTER_ID);
     
     auto oactfetch_addr = OutActGetAddr(child, act_row, act_col, k_row, k_col, act_filter_id);
-    auto spad1_base_addr = oactfetch_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    // the oactfetch_addr should already be a byte level address
+    auto spad1_base_addr = oactfetch_addr - SPAD1_BASE_ADDR;
     auto spad1 = child.state(SCRATCH_PAD_1);
 
     for (auto i = 0; i < CONV_VECTOR_SIZE; i++) {
@@ -533,8 +483,9 @@ void DefineConvDatapath(Ila& child) {
     auto k_col = child.state(CONV_CHILD_KERNEL_COL_ID);
     auto act_filter_id = child.state(CONV_CHILD_FILTER_ID);
     
+    // this output address should be byte level
     auto out_addr = OutActGetAddr(child, act_row, act_col, k_row, k_col, act_filter_id);
-    auto spad1_base_addr = out_addr * NIC_MEM_ELEM_BYTEWIDTH;
+    auto spad1_base_addr = out_addr - SPAD1_BASE_ADDR;
     auto spad1 = child.state(SCRATCH_PAD_1);
     auto spad1_next = spad1;
 

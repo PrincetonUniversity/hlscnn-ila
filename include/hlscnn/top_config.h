@@ -128,9 +128,9 @@ namespace hlscnn {
   // each memory bank should be 16-byte wide
   #define SPAD_NUM_BANK 4
   #define SPAD_DATA_BYTE_WIDTH 16
-  // #define SPAD_CAPACITY (SPAD_NUM_BANK * 2048)
-  // enlarge the SPAD for EfficientNet Simulation
-  #define SPAD_CAPACITY (SPAD_NUM_BANK * 0x1FF00)
+  #define SPAD_CAPACITY (SPAD_NUM_BANK * 2048)
+  // for data movement project, we switch the scratchpad size back to its original size
+  // #define SPAD_CAPACITY (SPAD_NUM_BANK * 0x1FF00)
   #define SPAD_BYTE_ENTRY_NUM (SPAD_CAPACITY * SPAD_DATA_BYTE_WIDTH)
 
   // base addr for configurations
