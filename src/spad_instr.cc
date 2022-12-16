@@ -168,7 +168,7 @@ void DefineSPADInstrChild(Ila& m) {
 
     // this part takes the data from the virtual memory for simulation
     auto spad = m.state(SCRATCH_PAD_1);
-    auto spad_addr = masked_addr - SPAD0_BASE_ADDR + cntr*16;
+    auto spad_addr = masked_addr - SPAD1_BASE_ADDR + cntr*16;
     auto vir_mem = m.state(VIRTUAL_SOC_MEMORY);
 
     auto spad_next = spad;
