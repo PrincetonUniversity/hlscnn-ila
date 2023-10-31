@@ -41,8 +41,10 @@ namespace hlscnn {
 
 #define CONV_MAX_ROWS 1024
 #define CONV_MAX_KERNEL_SIZE 256
-#define CONV_MAX_KERNEL_NUM 4096
-#define CONV_MAX_FILTER_NUM 256
+// #define CONV_MAX_FILTER_NUM 256
+#define CONV_MAX_FILTER_NUM 2048
+#define CONV_MAX_KERNEL_NUM 2048
+
 #define CONV_NUM_ROW_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_ROWS)))
 #define CONV_NUM_CHAN_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_KERNEL_NUM)))
 #define CONV_NUM_FILTER_BITWIDTH (int)(std::ceil(std::log2(CONV_MAX_FILTER_NUM)))

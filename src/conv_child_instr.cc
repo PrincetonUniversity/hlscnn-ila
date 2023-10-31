@@ -342,7 +342,6 @@ void DefineConvWeightFetch(Ila& child) {
     // 8-bit datatype
     auto base_addr = child.state(CONV_WEIGHT_BASE);
     auto weight_req_addr = WtGetAddr(child, filter_idx, kern_row, kern_col, chan_block);
-
     // Try changing the weight's bitwidth from 8bits to 16bits
     // update 08252020: The weight data is expanded, the address should cut in half;
     // auto spad_addr_base = weight_req_addr * (NIC_MEM_ELEM_BYTEWIDTH/2);
