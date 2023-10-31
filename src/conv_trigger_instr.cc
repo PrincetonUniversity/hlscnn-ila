@@ -88,10 +88,10 @@ void DefineAccelConvTrigger(Ila& m) {
     instr.SetUpdate(m.state(CONV_ENABLE_BIAS), SelectBit(channel_config, 16));
     instr.SetUpdate(m.state(CONV_ENABLE_RELU), SelectBit(channel_config, 17));
     instr.SetUpdate(m.state(CONV_ENABLE_ACCUM), SelectBit(channel_config, 18));
-
-    instr.SetUpdate(m.state(CONV_OFILTER_IDX), Extract(channel_config, 26, 19));
-
-    instr.SetUpdate(m.state(CONV_ENABLE_WB), SelectBit(channel_config, 27));
+    // 10312023: extend the conv_ofilter_idx bitwidth to 12, the same as the conv output channel number
+    instr.SetUpdate(m.state(CONV_OFILTER_IDX), Extract(channel_config, 30, 19));
+    // 10312023: move the enable wb bit to the last bit
+    instr.SetUpdate(m.state(CONV_ENABLE_WB), SelectBit(channel_config, 31));
 
     // set the child valid flag
     auto child_valid_flag = m.state(ACCEL_CONV_CHILD_VALID_FLAG);
